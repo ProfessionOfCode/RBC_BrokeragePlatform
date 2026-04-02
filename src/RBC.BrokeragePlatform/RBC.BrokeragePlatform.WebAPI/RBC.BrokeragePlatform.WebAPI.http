@@ -1,0 +1,6 @@
+@RBC.BrokeragePlatform.WebAPI_HostAddress = http://localhost:5016
+
+GET {{RBC.BrokeragePlatform.WebAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
