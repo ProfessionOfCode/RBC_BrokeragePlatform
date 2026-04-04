@@ -5,9 +5,226 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:RBC.BrokeragePlatform.WPF"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Title="MainWindow"
-    Width="800"
-    Height="450"
+    xmlns:viewmodel="clr-namespace:RBC.BrokeragePlatform.WPF.ViewModel"
+    Title="RBC Brokerage Platform"
+    Width="1200"
+    Height="700"
+    Background="#F5F5F5"
+    FontFamily="./fonts/#Roboto Regular"
     mc:Ignorable="d">
-    <Grid />
+    <Window.DataContext>
+        <viewmodel:MainViewModel />
+    </Window.DataContext>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" MinWidth="300" />
+            <ColumnDefinition Width="2*" MinWidth="500" />
+        </Grid.ColumnDefinitions>
+
+        <!--  LEFT PANE: Account List  -->
+        <Border
+            Grid.Column="0"
+            Background="White"
+            BorderBrush="#E0E0E0"
+            BorderThickness="0,0,1,0">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <!--  Search  -->
+                <DockPanel Grid.Row="0" LastChildFill="True">
+                    <StackPanel Background="White" DockPanel.Dock="Top">
+                        <TextBlock
+                            Margin="15,15,15,10"
+                            FontFamily="./fonts/#Roboto ExtraBold"
+                            FontSize="32"
+                            FontWeight="Bold"
+                            Text="Accounts" />
+                        <TextBox
+                            Margin="15,0,15,15"
+                            Padding="10"
+                            BorderBrush="#CCCCCC"
+                            BorderThickness="1"
+                            Text="{Binding AccountListViewModel.SearchText, UpdateSourceTrigger=PropertyChanged}" />
+                    </StackPanel>
+                </DockPanel>
+
+                <!--  Account List  -->
+                <ListBox
+                    Grid.Row="1"
+                    Padding="0"
+                    BorderThickness="0"
+                    ItemsSource="{Binding AccountListViewModel.Accounts}"
+                    SelectedItem="{Binding AccountListViewModel.SelectedAccount}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Border BorderBrush="#F0F0F0" BorderThickness="0,0,0,1">
+                                <Grid Margin="15">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+
+                                    <TextBlock
+                                        Grid.Row="0"
+                                        FontFamily="./fonts/#Roboto Bold"
+                                        FontWeight="Bold"
+                                        Text="{Binding AccountNumber}" />
+                                    <TextBlock
+                                        Grid.Row="1"
+                                        Margin="0,5,0,0"
+                                        Foreground="#666"
+                                        Text="{Binding ClientName}" />
+                                    <TextBlock
+                                        Grid.Row="2"
+                                        Margin="0,5,0,0"
+                                        FontWeight="SemiBold"
+                                        Foreground="#2196F3"
+                                        Text="{Binding CashBalance, StringFormat='${0:N2}'}" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Grid>
+        </Border>
+
+        <!--  RIGHT PANE: Account Details & Positions  -->
+        <Border Grid.Column="1" Background="White">
+            <DockPanel LastChildFill="True">
+                <!--  Buttons  -->
+                <StackPanel
+                    Margin="20"
+                    HorizontalAlignment="Right"
+                    DockPanel.Dock="Bottom"
+                    Orientation="Horizontal">
+                    <Button
+                        Margin="0,0,10,0"
+                        Padding="15,8"
+                        Background="#2196F3"
+                        BorderThickness="0"
+                        Command="{Binding SelectedAccountViewModel.PlaceOrderCommand}"
+                        Content="Place Order"
+                        Cursor="Hand"
+                        Foreground="White" />
+                    <Button
+                        Padding="15,8"
+                        Background="#757575"
+                        BorderThickness="0"
+                        Command="{Binding SelectedAccountViewModel.RefreshPositionsCommand}"
+                        Content="Refresh"
+                        Cursor="Hand"
+                        Foreground="White" />
+                </StackPanel>
+
+                <!--  No Selection State  -->
+                <TextBlock
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    FontSize="14"
+                    Foreground="#999"
+                    Text="Select an account to view details and positions"
+                    Visibility="{Binding SelectedAccountViewModel.SelectedAccount, Converter={StaticResource InverseNullToVisibilityConverter}}" />
+
+                <!--  Content When Selected  -->
+                <ScrollViewer DockPanel.Dock="Top" Visibility="{Binding SelectedAccountViewModel.SelectedAccount, Converter={StaticResource NullToVisibilityConverter}}">
+                    <StackPanel Margin="20">
+                        <!--  Account Details  -->
+                        <TextBlock
+                            Margin="0,0,0,15"
+                            FontSize="16"
+                            FontWeight="Bold"
+                            Text="Account Details" />
+                        <Grid Margin="0,0,0,20">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0">
+                                <TextBlock
+                                    FontSize="11"
+                                    FontWeight="SemiBold"
+                                    Foreground="#666"
+                                    Text="Account Number" />
+                                <TextBlock
+                                    Margin="0,5,0,15"
+                                    FontSize="14"
+                                    FontWeight="Bold"
+                                    Text="{Binding SelectedAccountViewModel.SelectedAccount.AccountNumber}" />
+                                <TextBlock
+                                    FontSize="11"
+                                    FontWeight="SemiBold"
+                                    Foreground="#666"
+                                    Text="Cash Balance" />
+                                <TextBlock
+                                    FontSize="14"
+                                    FontWeight="Bold"
+                                    Foreground="#4CAF50"
+                                    Text="{Binding SelectedAccountViewModel.SelectedAccount.CashBalance, StringFormat='${0:N2}'}" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1">
+                                <TextBlock
+                                    FontSize="11"
+                                    FontWeight="SemiBold"
+                                    Foreground="#666"
+                                    Text="Client Name" />
+                                <TextBlock
+                                    Margin="0,5,0,15"
+                                    FontSize="14"
+                                    FontWeight="Bold"
+                                    Text="{Binding SelectedAccountViewModel.SelectedAccount.ClientName}" />
+                            </StackPanel>
+                        </Grid>
+
+                        <!--  Positions Table  -->
+                        <TextBlock
+                            Margin="0,20,0,10"
+                            FontSize="14"
+                            FontWeight="Bold"
+                            Text="Positions" />
+
+                        <DataGrid
+                            MaxHeight="300"
+                            AutoGenerateColumns="False"
+                            BorderBrush="#CCCCCC"
+                            BorderThickness="1"
+                            CanUserAddRows="False"
+                            ColumnHeaderHeight="35"
+                            HeadersVisibility="Column"
+                            ItemsSource="{Binding SelectedAccountViewModel.Positions}"
+                            RowBackground="White">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn
+                                    Width="80"
+                                    Binding="{Binding Symbol}"
+                                    Header="Symbol" />
+                                <DataGridTextColumn
+                                    Width="80"
+                                    Binding="{Binding Quantity}"
+                                    Header="Quantity" />
+                                <DataGridTextColumn
+                                    Width="120"
+                                    Binding="{Binding AverageCostPerShare, StringFormat='${0:N2}'}"
+                                    Header="Avg Cost/Share" />
+                                <DataGridTextColumn
+                                    Width="120"
+                                    Binding="{Binding CurrentPrice, StringFormat='${0:N2}'}"
+                                    Header="Current Price" />
+                                <DataGridTextColumn
+                                    Width="120"
+                                    Binding="{Binding CurrentValue, StringFormat='${0:N2}'}"
+                                    Header="Current Value" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </StackPanel>
+                </ScrollViewer>
+            </DockPanel>
+        </Border>
+    </Grid>
 </Window>

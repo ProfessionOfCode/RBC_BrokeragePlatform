@@ -1,0 +1,250 @@
+﻿<Window
+    x:Class="RBC.BrokeragePlatform.WPF.PlaceOrderWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:RBC.BrokeragePlatform.WPF"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewModel="clr-namespace:RBC.BrokeragePlatform.WPF.ViewModel"
+    Title="{Binding PlaceOrderTitle}"
+    Width="720"
+    Height="640"
+    FontFamily="./fonts/#Roboto Regular"
+    ResizeMode="NoResize"
+    mc:Ignorable="d">
+    <Window.DataContext>
+        <viewModel:PlaceOrderViewModel />
+    </Window.DataContext>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="4*" />
+            <RowDefinition Height="20" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <TextBlock
+            Grid.Row="0"
+            Margin="0,20,0,20"
+            HorizontalAlignment="Center"
+            FontFamily="./fonts/#Roboto Bold"
+            FontSize="32"
+            Text="Place an order" />
+
+
+        <StackPanel
+            Grid.Row="1"
+            Height="74"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Orientation="Horizontal">
+            <Border
+                Margin="20,0"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                BorderThickness="0,0,0,1"
+                CornerRadius="4">
+                <StackPanel Orientation="Vertical">
+                    <TextBlock
+                        Margin="0,0,0,8"
+                        Foreground="Gray"
+                        Text="Account number" />
+                    <TextBox
+                        BorderThickness="0"
+                        FontFamily="./fonts/#Roboto Bold"
+                        FontSize="18"
+                        FontWeight="Bold"
+                        IsReadOnly="True"
+                        Text="{Binding SelectedAccount.AccountNumber, Mode=OneWay}" />
+                </StackPanel>
+            </Border>
+
+            <Border
+                Margin="20,0"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                BorderThickness="0,0,0,1"
+                CornerRadius="4">
+                <StackPanel Orientation="Vertical">
+                    <TextBlock
+                        Margin="0,0,0,8"
+                        Foreground="Gray"
+                        Text="Cash balance" />
+                    <TextBox
+                        BorderThickness="0"
+                        FontSize="18"
+                        FontWeight="SemiBold"
+                        Foreground="#2196F3"
+                        IsReadOnly="True"
+                        Text="{Binding SelectedAccount.CashBalance, Mode=OneWay, StringFormat='${0:N2}'}" />
+                </StackPanel>
+            </Border>
+
+        </StackPanel>
+
+        <Grid Grid.Row="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="32" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="32" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="32" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="10" />
+                <RowDefinition Height="2*" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="0" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+
+            <TextBlock
+                Grid.Row="0"
+                Grid.Column="3"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Text="Symbol:" />
+            <ComboBox
+                Grid.Row="0"
+                Grid.Column="5"
+                Grid.ColumnSpan="2"
+                Height="30"
+                ItemsSource="{Binding Symbols, UpdateSourceTrigger=PropertyChanged}"
+                SelectedIndex="1"
+                SelectedItem="{Binding SelectedSymbol, Mode=TwoWay}" />
+
+
+            <TextBlock
+                Grid.Row="2"
+                Grid.Column="3"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Text="Order type:" />
+            <ComboBox
+                Grid.Row="2"
+                Grid.Column="5"
+                Grid.ColumnSpan="2"
+                Height="30"
+                DisplayMemberPath="OrderTypeName"
+                ItemsSource="{Binding OrderTypes, UpdateSourceTrigger=PropertyChanged}"
+                SelectedIndex="1"
+                SelectedItem="{Binding SelectedOrderType, Mode=TwoWay}" />
+
+
+
+            <TextBlock
+                Grid.Row="4"
+                Grid.Column="3"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Text="Quantity:" />
+            <TextBox
+                Grid.Row="4"
+                Grid.Column="5"
+                Grid.ColumnSpan="2"
+                Width="100"
+                Height="22"
+                HorizontalAlignment="Left"
+                MaxLength="10"
+                PreviewKeyDown="NumberBox_PreviewKeyDown"
+                PreviewTextInput="NumberBox_PreviewTextInput"
+                Text="{Binding Quantity, Mode=TwoWay}" />
+
+
+
+            <TextBlock
+                Grid.Row="6"
+                Grid.Column="3"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Text="Limit price:" />
+            <TextBox
+                Grid.Row="6"
+                Grid.Column="5"
+                Grid.ColumnSpan="2"
+                Width="100"
+                Height="22"
+                HorizontalAlignment="Left"
+                MaxLength="10"
+                PreviewKeyDown="NumberBox_PreviewKeyDown"
+                PreviewTextInput="NumberBox_PreviewTextInput"
+                Text="{Binding LimitPrice, Mode=TwoWay}" />
+
+
+            <Grid
+                Grid.Row="8"
+                Grid.Column="1"
+                Grid.ColumnSpan="7"
+                Margin="10,5">
+
+                <!--  ItemsControl is lightweight and perfect for static lists  -->
+                <ItemsControl
+                    HorizontalContentAlignment="Stretch"
+                    IsEnabled="{Binding HasErrors}"
+                    ItemsSource="{Binding ValidationErrors}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <!--  Bullet symbol  -->
+                                <TextBlock
+                                    Margin="0,0,5,0"
+                                    FontSize="16"
+                                    FontWeight="Bold"
+                                    Text="·" />
+                                <!--  List item text  -->
+                                <TextBlock
+                                    FontSize="12"
+                                    Foreground="Red"
+                                    Text="{Binding}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Grid>
+
+
+        </Grid>
+
+        <StackPanel
+            Grid.Row="4"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Orientation="Horizontal">
+            <Button
+                Width="100"
+                Height="48"
+                Margin="8,0"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Background="Yellow"
+                Command="{Binding PlaceOrderCommand}"
+                Content="Place order"
+                Cursor="Hand"
+                FontFamily="./fonts/#Roboto Bold"
+                FontWeight="ExtraBold"
+                Foreground="Black" />
+            <Button
+                Width="100"
+                Height="48"
+                Margin="8,0"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Click="Cancel_ButtonClicked"
+                Content="Cancel"
+                Cursor="Hand" />
+        </StackPanel>
+
+    </Grid>
+
+</Window>
