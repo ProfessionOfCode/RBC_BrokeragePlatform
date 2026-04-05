@@ -16,5 +16,7 @@ public partial class Position : ObservableObject
     [ObservableProperty]
     private decimal currentPrice;
 
-    public decimal CurrentValue => Quantity * CurrentPrice;
+    [ObservableProperty]
+    public decimal currentValue;
+
 }

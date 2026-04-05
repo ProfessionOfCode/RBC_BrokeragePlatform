@@ -49,16 +49,16 @@ public class BrokerageService
             {
                 "ACC001", new()
                 {
-                    new() { Symbol = "AAPL", Quantity = 100, AverageCostPerShare = 150.50m, CurrentPrice = 178.45m },
-                    new() { Symbol = "MSFT", Quantity = 50, AverageCostPerShare = 300.75m, CurrentPrice = 315.20m },
-                    new() { Symbol = "GOOGL", Quantity = 25, AverageCostPerShare = 2500m, CurrentPrice = 2650.30m },
+                    new() { Symbol = "AAPL", Quantity = 100, AverageCostPerShare = 150.50m, CurrentPrice = 178.45m, CurrentValue = 100 * 178.45m }, 
+                    new() { Symbol = "MSFT", Quantity = 50, AverageCostPerShare = 300.75m, CurrentPrice = 315.20m , CurrentValue = 50 * 315.20m  },
+                    new() { Symbol = "GOOGL", Quantity = 25, AverageCostPerShare = 2500m, CurrentPrice = 2650.30m , CurrentValue = 25 * 2650.30m },
                 }
             },
             {
                 "ACC002", new()
                 {
-                    new() { Symbol = "TSLA", Quantity = 30, AverageCostPerShare = 800m, CurrentPrice = 950.50m },
-                    new() { Symbol = "AMZN", Quantity = 40, AverageCostPerShare = 3200m, CurrentPrice = 3450.20m },
+                    new() { Symbol = "TSLA", Quantity = 30, AverageCostPerShare = 800m, CurrentPrice = 950.50m, CurrentValue = 30 * 950.50m },
+                    new() { Symbol = "AMZN", Quantity = 40, AverageCostPerShare = 3200m, CurrentPrice = 3450.20m, CurrentValue = 40 * 3450.20m },
                 }
             },
         };
