@@ -1,5 +1,6 @@
-﻿using System.Windows;
+﻿using RBC.BrokeragePlatform.WPF.Model;
 using RBC.BrokeragePlatform.WPF.ViewModel;
+using System.Windows;
 
 namespace RBC.BrokeragePlatform.WPF
 {
@@ -8,28 +9,42 @@ namespace RBC.BrokeragePlatform.WPF
     /// </summary>
     public partial class MainWindow : Window
     {
+        private PlaceOrderWindow _placeOrderWindow = null!;
+
         public MainWindow()
         {
             InitializeComponent();
             var viewModel = new MainViewModel();
-            RegisterCallbackToPlaceOrderDialogWindow(viewModel);
+            RegisterCallbackToShowPlaceOrderDialogWindow(viewModel);
+            RegisterPlaceOrderConfirmationMessage(viewModel);
             DataContext = viewModel;
 
         }
 
-        private void RegisterCallbackToPlaceOrderDialogWindow(MainViewModel viewModel)
+        private void RegisterPlaceOrderConfirmationMessage(MainViewModel viewModel)
+        {            
+            viewModel.PlaceOrderViewModel.ShowPlaceOrderConfirmationDialogCallback += ShowConfirmationDialog;
+        }
+
+
+        private void RegisterCallbackToShowPlaceOrderDialogWindow(MainViewModel viewModel)
         {
-            viewModel.SelectedAccountViewModel.OpenPlaceOrderWindowAsDialog = (selectedAccountViewModel, account) =>
+            viewModel.SelectedAccountViewModel.ShowPlaceOrderWindowAsDialogCallback += (selectedAccountViewModel, account) =>
             {
-                var placeOrderWindow = new PlaceOrderWindow();
-                var placeOrderViewModel = new PlaceOrderViewModel();      // TODO : refactor to use DI
-                placeOrderViewModel.SetBrokerageService(selectedAccountViewModel.GetBrokerageService());
-                placeOrderViewModel.LoadAccountDetails(account);
-                placeOrderWindow.DataContext = placeOrderViewModel;
-                placeOrderWindow.Owner = this;
-                placeOrderWindow.ShowDialog();
+                _placeOrderWindow = new PlaceOrderWindow
+                {
+                    DataContext = viewModel.PlaceOrderViewModel
+                };
+                viewModel.PlaceOrderViewModel.LoadAccountDetails(account);
+                _placeOrderWindow.Owner = this;
+                _placeOrderWindow.ShowDialog();
             };
         }
-    }
 
+        private int ShowConfirmationDialog(PlaceOrderViewModel model, Account? account)
+        {
+            var result = MessageBox.Show(_placeOrderWindow, "Are you sure you want to place this order?", "Confirm Order", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            return result == MessageBoxResult.Yes ? 1 : 0;
+        }
+    }
 }

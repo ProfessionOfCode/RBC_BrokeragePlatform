@@ -1,17 +1,16 @@
 namespace RBC.BrokeragePlatform.WPF.ViewModel;
 
-using System.Collections.ObjectModel;
-using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using RBC.BrokeragePlatform.WPF.Model;
 using RBC.BrokeragePlatform.WPF.Services;
+using System.Collections.ObjectModel;
 
 public partial class SelectedAccountViewModel : ObservableObject, IDisposable
 {
     private readonly BrokerageService _brokerageService;
 
-    public Action<SelectedAccountViewModel, Account?>? OpenPlaceOrderWindowAsDialog;
+    public Action<SelectedAccountViewModel, Account?>? ShowPlaceOrderWindowAsDialogCallback;
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(PlaceOrderCommand), nameof(RefreshPositionsCommand))]
@@ -45,7 +44,7 @@ public partial class SelectedAccountViewModel : ObservableObject, IDisposable
     public void PlaceOrder()
     {
         // callback to main view code behind to open place order interface
-        OpenPlaceOrderWindowAsDialog?.Invoke(this, SelectedAccount);
+        ShowPlaceOrderWindowAsDialogCallback?.Invoke(this, SelectedAccount);
     }
 
     private void RefreshPositionsInternal()

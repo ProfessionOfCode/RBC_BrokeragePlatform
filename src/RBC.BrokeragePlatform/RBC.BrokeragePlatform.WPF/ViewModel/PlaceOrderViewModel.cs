@@ -12,6 +12,8 @@ public partial class PlaceOrderViewModel : ObservableValidator, IDisposable
 {
     private BrokerageService _brokerageService = new();
 
+    public Func<PlaceOrderViewModel, Account?, int>? ShowPlaceOrderConfirmationDialogCallback;
+
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(PlaceOrderCommand))]
     private Account? selectedAccount;
@@ -27,14 +29,14 @@ public partial class PlaceOrderViewModel : ObservableValidator, IDisposable
 
     [NotifyCanExecuteChangedFor(nameof(PlaceOrderCommand))]
     [ObservableProperty]
-    private string selectedSymbol;
+    private string selectedSymbol = string.Empty;
 
     [ObservableProperty]
-    private string placeOrderTitle;
+    private string placeOrderTitle = string.Empty;
 
     [NotifyCanExecuteChangedFor(nameof(PlaceOrderCommand))]
     [ObservableProperty]
-    private OrderType selectedOrderType;
+    private OrderType selectedOrderType = new();
 
     [NotifyDataErrorInfo]
     [CustomValidation(typeof(PlaceOrderViewModel), nameof(ValidateQuantity))]
@@ -47,6 +49,9 @@ public partial class PlaceOrderViewModel : ObservableValidator, IDisposable
     [NotifyCanExecuteChangedFor(nameof(PlaceOrderCommand))]
     [ObservableProperty]
     private decimal limitPrice;
+
+    [ObservableProperty]
+    private bool isPlacingOrder;
 
     public static ValidationResult ValidateLimitPrice(decimal limitPrice, ValidationContext context)
     {
@@ -72,13 +77,16 @@ public partial class PlaceOrderViewModel : ObservableValidator, IDisposable
         ErrorsChanged += (s, e) =>
         {
             ValidationErrors.Clear();
-            foreach (var error in GetErrors(e.PropertyName).Select(e=> e.ErrorMessage).ToList() ?? Enumerable.Empty<string?>())
+            foreach (var error in GetErrors(e.PropertyName).Select(e => e.ErrorMessage).ToList() ?? Enumerable.Empty<string?>())
                 ValidationErrors.Add(error);
         };
     }
+    public PlaceOrderViewModel(BrokerageService brokerageService): this()
+    {
+        _brokerageService = brokerageService;
+    }
 
 
-    
 
     public void SetBrokerageService(BrokerageService brokerageService)
     {
@@ -94,10 +102,31 @@ public partial class PlaceOrderViewModel : ObservableValidator, IDisposable
 
 
     [RelayCommand(CanExecute = nameof(CanPlaceOrder))]
-    public void PlaceOrder()
+    public async Task PlaceOrder()
     {
         // call brokerage service to send order to back-end hub
+        try
+        {
+            IsPlacingOrder = true;
 
+            var confirmationResult = ShowPlaceOrderConfirmationDialogCallback?.Invoke(this, SelectedAccount);
+
+            if (confirmationResult != 1)
+                return;    
+            
+            await Task.Delay(1000); // simulate network delay
+
+        }
+        catch (Exception)
+        {
+            // log the error
+            ValidationErrors.Clear();
+            ValidationErrors.Add("An error occurred while placing the order. Please try again.");
+        }
+        finally
+        {
+            IsPlacingOrder = false;
+        }   
     }
 
     private void RefreshPlaceOrderInterface()
@@ -112,17 +141,23 @@ public partial class PlaceOrderViewModel : ObservableValidator, IDisposable
             foreach (var orderType in orderTypes)
                 OrderTypes.Add(orderType);
 
-            var symbols = _brokerageService.GetSymbols(selectedAccount.AccountNumber);
+            var symbols = _brokerageService.GetSymbols(SelectedAccount?.AccountNumber ?? string.Empty);
             Symbols.Clear();
             foreach (var symbol in symbols)
                 Symbols.Add(symbol);
 
-            PlaceOrderTitle = $"Place Order for {SelectedAccount.ClientName} ({SelectedAccount.AccountNumber})";
+            PlaceOrderTitle = $"Place Order for {SelectedAccount?.ClientName} ({SelectedAccount?.AccountNumber})";
+
+            Quantity = default!;
+
+            LimitPrice = default!;
 
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             // log the error
+            ValidationErrors.Clear();
+            ValidationErrors.Add("An error occurred while placing the order. Please try again.");
         }
     }
 
@@ -135,20 +170,42 @@ public partial class PlaceOrderViewModel : ObservableValidator, IDisposable
 
     private bool CanPlaceOrder()
     {
-        var hasSelectedAccount = SelectedAccount != null;
-        
-        if(!hasSelectedAccount)
+        if (IsPlacingOrder)
             return false;
+
+        var hasSelectedAccount = SelectedAccount != null;
+
+        if (!hasSelectedAccount)
+        {
+            ValidationErrors.Clear();
+            ValidationErrors.Add("An account must be selected.");
+            return false;
+        }
+
+        var hasSelectedSymbol = !string.IsNullOrEmpty(SelectedSymbol);
+        if (!hasSelectedSymbol)
+        {
+            ValidationErrors.Clear();
+            ValidationErrors.Add("A symbol must be selected.");
+            return false;
+        }        
+
+        var hasSelectedOrderType = SelectedOrderType != default;
+        if (!hasSelectedOrderType)
+        {
+            ValidationErrors.Clear();
+            ValidationErrors.Add("An order type must be selected.");
+            return false;
+        }
 
         var hasValidationErrors = GetErrors(nameof(Quantity))?.Cast<ValidationResult>().Any() == true
             || GetErrors(nameof(LimitPrice))?.Cast<ValidationResult>().Any() == true;
 
-        var hasSelectedSymbol = !string.IsNullOrEmpty(SelectedSymbol);
-
-        var hasSelectedOrderType = SelectedOrderType != default;
-        
-        if(hasValidationErrors || !hasSelectedSymbol || !hasSelectedOrderType)
-        return false;
+        if (hasValidationErrors)
+        {
+            // custom validation errors will be automatically added to ValidationErrors collection via ErrorsChanged event handler
+            return false;
+        }
 
         var isCashBalanceSufficient = SelectedAccount?.CashBalance >= Quantity * LimitPrice;
 
@@ -162,12 +219,12 @@ public partial class PlaceOrderViewModel : ObservableValidator, IDisposable
         if(Quantity * LimitPrice == 0)
         {
             ValidationErrors.Clear();
-            ValidationErrors.Add("Quantity and Limit Price must be greater than zero.");
+            ValidationErrors.Add("Quantity and Limit Price must be greater than zero.");        //TODO: validate this scenario is not a possible request - we can not buy/sell 0 shares or at $0 limit price
             return false;
         }
 
         ValidationErrors.Clear();
-        return true;
 
+        return true;
     }
 }

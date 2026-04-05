@@ -195,8 +195,13 @@
                             BorderBrush="#CCCCCC"
                             BorderThickness="1"
                             CanUserAddRows="False"
+                            CanUserReorderColumns="False"
+                            CanUserResizeColumns="False"
+                            CanUserSortColumns="False"
                             ColumnHeaderHeight="35"
+                            ColumnWidth="*"
                             HeadersVisibility="Column"
+                            IsReadOnly="True"
                             ItemsSource="{Binding SelectedAccountViewModel.Positions}"
                             RowBackground="White">
                             <DataGrid.Columns>

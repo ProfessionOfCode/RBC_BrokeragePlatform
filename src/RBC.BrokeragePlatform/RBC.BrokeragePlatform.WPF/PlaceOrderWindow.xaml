@@ -11,6 +11,7 @@
     Height="640"
     FontFamily="./fonts/#Roboto Regular"
     ResizeMode="NoResize"
+    WindowStartupLocation="CenterOwner"
     mc:Ignorable="d">
     <Window.DataContext>
         <viewModel:PlaceOrderViewModel />
@@ -121,7 +122,6 @@
                 Grid.ColumnSpan="2"
                 Height="30"
                 ItemsSource="{Binding Symbols, UpdateSourceTrigger=PropertyChanged}"
-                SelectedIndex="1"
                 SelectedItem="{Binding SelectedSymbol, Mode=TwoWay}" />
 
 
@@ -138,7 +138,6 @@
                 Height="30"
                 DisplayMemberPath="OrderTypeName"
                 ItemsSource="{Binding OrderTypes, UpdateSourceTrigger=PropertyChanged}"
-                SelectedIndex="1"
                 SelectedItem="{Binding SelectedOrderType, Mode=TwoWay}" />
 
 
