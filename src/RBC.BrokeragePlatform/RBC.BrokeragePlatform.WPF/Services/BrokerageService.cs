@@ -1,36 +1,108 @@
 namespace RBC.BrokeragePlatform.WPF.Services;
 
+using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using RBC.BrokeragePlatform.SharedCore.DTOs;
+using RBC.BrokeragePlatform.SharedCore.Enums;
 using RBC.BrokeragePlatform.WPF.Model;
 
-public class BrokerageService
-{
-    private readonly List<Account> _accounts;
+public class BrokerageService : IDisposable
+{   
     private readonly List<OrderType> _orderTypes;
-    private readonly Dictionary<string, List<Position>> _positions;
+    private readonly Dictionary<int, List<PositionDto>> _positions = new Dictionary<int, List<PositionDto>>();
+    private readonly ApiService _apiService;
+    private readonly SignalRService _signalRService;
+    private readonly ILogger<BrokerageService> _logger;
+    public Action<List<PositionDto>>? PositionUpdatedCallback { get; set; }
 
-    public BrokerageService()
+    public BrokerageService(ApiService apiService, SignalRService signalRService, ILogger<BrokerageService> logger)
     {
-        _accounts = InitializeAccounts();
+        _apiService = apiService;
+        _signalRService = signalRService;
+        _logger = logger;
         _orderTypes = InitializeOrderTypes();
-        _positions = InitializePositions();
+
+        SubscribeToSignalR();
     }
 
-    public List<Account> GetAllAccounts() => _accounts;
+    private void SubscribeToSignalR()
+    {
+        var connection = _signalRService.Connection;
+        if (connection != null)
+        {
+            connection.On<List<PositionDto>>("PositionUpdated", OnPositionUpdated);
+            _logger.LogInformation("Subscribed to PositionUpdated SignalR event.");
+        }
+        else
+        {
+            _logger.LogWarning("SignalR connection is not initialized.");
+        }
+    }
 
-    public List<Position> GetPositions(string accountNumber)
-        => _positions.TryGetValue(accountNumber, out var pos) ? pos : new();
+    public async Task<List<AccountDto>> GetAllAccountsAsync()
+    {
+        try
+        {
+            _logger.LogInformation("Requesting all accounts from API.");
+
+            var result = await _apiService.GetAsync("api/accounts");
+
+            // transform result to List<Account> if necessary, here we assume it's already in the correct format
+            var accounts = JsonConvert.DeserializeObject<List<AccountDto>>(result);
+
+            _logger.LogInformation("Received {Count} accounts.", accounts?.Count ?? 0);
+
+            return accounts ?? new List<AccountDto>();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to get accounts.");
+            return new List<AccountDto>();
+        }
+    }
+   
+    
+    public async Task<List<PositionDto>> GetPositionsAsync(int accountId)
+    {
+        try
+        {
+            _logger.LogInformation($"Requesting all positions of account {accountId} from API.");
+
+            var result = await _apiService.GetAsync($"api/positions/{accountId}");
+
+            // transform result to List<Account> if necessary, here we assume it's already in the correct format
+            var positionDtos = JsonConvert.DeserializeObject<List<PositionDto>>(result);
+
+            _logger.LogInformation("Received {Count} accounts.", positionDtos?.Count ?? 0);
+
+            if (!_positions.ContainsKey(accountId))
+            {
+                _positions[accountId] = positionDtos ?? new List<PositionDto>();
+            }
+
+            return positionDtos ?? new List<PositionDto>();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to get positions.");
+            return new List<PositionDto>();
+        }
+    }
+
+    private void OnPositionUpdated(List<PositionDto> updatedPositions)
+    {
+        _logger.LogInformation("Received PositionUpdated push for {Symbols}.", string.Join( ",", updatedPositions.Select(p => p.Symbol).ToList()));
+        PositionUpdatedCallback?.Invoke(updatedPositions);
+    }
+
 
     public List<OrderType> GetOrderTypes() => _orderTypes;
-    public List<string> GetSymbols(string accountNumber) => _positions.TryGetValue(accountNumber, out var pos) ? pos.Select(p => p.Symbol).ToList() : new();
-
-    private List<Account> InitializeAccounts()
+    public List<string> GetSymbols(int accountId) 
     {
-        return new()
-        {
-            new() { AccountNumber = "ACC001", ClientName = "John Smith", CashBalance = 150000m },
-            new() { AccountNumber = "ACC002", ClientName = "Sarah Johnson", CashBalance = 250000m },
-            new() { AccountNumber = "ACC003", ClientName = "Michael Chen", CashBalance = 75000m },
-        };
+        _positions.TryGetValue(accountId, out var positions);
+
+        return positions?.Select(p => p.Symbol).Distinct().ToList() ?? new List<string>();
     }
     
     private List<OrderType> InitializeOrderTypes()
@@ -42,25 +114,16 @@ public class BrokerageService
         };
     }
 
-    private Dictionary<string, List<Position>> InitializePositions()
+    public void Dispose()
     {
-        return new()
-        {
-            {
-                "ACC001", new()
-                {
-                    new() { Symbol = "AAPL", Quantity = 100, AverageCostPerShare = 150.50m, CurrentPrice = 178.45m, CurrentValue = 100 * 178.45m }, 
-                    new() { Symbol = "MSFT", Quantity = 50, AverageCostPerShare = 300.75m, CurrentPrice = 315.20m , CurrentValue = 50 * 315.20m  },
-                    new() { Symbol = "GOOGL", Quantity = 25, AverageCostPerShare = 2500m, CurrentPrice = 2650.30m , CurrentValue = 25 * 2650.30m },
-                }
-            },
-            {
-                "ACC002", new()
-                {
-                    new() { Symbol = "TSLA", Quantity = 30, AverageCostPerShare = 800m, CurrentPrice = 950.50m, CurrentValue = 30 * 950.50m },
-                    new() { Symbol = "AMZN", Quantity = 40, AverageCostPerShare = 3200m, CurrentPrice = 3450.20m, CurrentValue = 40 * 3450.20m },
-                }
-            },
-        };
+        _positions.Clear();
+        
+        _apiService.Dispose();
+
+        _signalRService.Dispose();
+
+        GC.SuppressFinalize(this);
+        GC.Collect();
+
     }
 }

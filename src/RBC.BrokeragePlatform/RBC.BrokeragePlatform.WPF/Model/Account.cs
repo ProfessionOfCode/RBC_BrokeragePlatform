@@ -5,6 +5,9 @@ using CommunityToolkit.Mvvm.ComponentModel;
 public partial class Account : ObservableObject
 {
     [ObservableProperty]
+    private int accountId;
+
+    [ObservableProperty]
     private string accountNumber = string.Empty;
 
     [ObservableProperty]

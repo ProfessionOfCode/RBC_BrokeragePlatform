@@ -7,7 +7,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="15.1.3" />
+    <PackageReference Include="FluentValidation" Version="12.1.1" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
+    <PackageReference Include="MediatR" Version="12.5.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\RBC.BrokeragePlatform.Domain\RBC.BrokeragePlatform.Domain.csproj" />
+    <ProjectReference Include="..\RBC.BrokeragePlatform.SharedCore\RBC.BrokeragePlatform.SharedCore.csproj" />
   </ItemGroup>
 
 </Project>

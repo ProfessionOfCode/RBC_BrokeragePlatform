@@ -202,7 +202,7 @@
                             ColumnWidth="*"
                             HeadersVisibility="Column"
                             IsReadOnly="True"
-                            ItemsSource="{Binding SelectedAccountViewModel.Positions}"
+                            ItemsSource="{Binding SelectedAccountViewModel.Positions, Mode=OneWay}"
                             RowBackground="White">
                             <DataGrid.Columns>
                                 <DataGridTextColumn

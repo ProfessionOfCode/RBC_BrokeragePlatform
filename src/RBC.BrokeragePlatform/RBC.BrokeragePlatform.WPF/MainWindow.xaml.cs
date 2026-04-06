@@ -15,10 +15,20 @@ namespace RBC.BrokeragePlatform.WPF
         {
             InitializeComponent();
             var viewModel = new MainViewModel();
-            RegisterCallbackToShowPlaceOrderDialogWindow(viewModel);
-            RegisterPlaceOrderConfirmationMessage(viewModel);
-            DataContext = viewModel;
+            //RegisterCallbackToShowPlaceOrderDialogWindow(viewModel);
+            //RegisterPlaceOrderConfirmationMessage(viewModel);
+            
+            DataContextChanged += async (s, e) =>
+            {
+                if (e.NewValue is MainViewModel newViewModel)
+                {
+                    RegisterCallbackToShowPlaceOrderDialogWindow(newViewModel);
+                    RegisterPlaceOrderConfirmationMessage(newViewModel);
+                    await newViewModel.AccountListViewModel.LoadAccountsAsync();
+                }
+            };
 
+            DataContext = viewModel;
         }
 
         private void RegisterPlaceOrderConfirmationMessage(MainViewModel viewModel)
@@ -26,16 +36,15 @@ namespace RBC.BrokeragePlatform.WPF
             viewModel.PlaceOrderViewModel.ShowPlaceOrderConfirmationDialogCallback += ShowConfirmationDialog;
         }
 
-
         private void RegisterCallbackToShowPlaceOrderDialogWindow(MainViewModel viewModel)
         {
-            viewModel.SelectedAccountViewModel.ShowPlaceOrderWindowAsDialogCallback += (selectedAccountViewModel, account) =>
+            viewModel.SelectedAccountViewModel.ShowPlaceOrderWindowAsDialogCallback += async (selectedAccountViewModel, account) =>
             {
                 _placeOrderWindow = new PlaceOrderWindow
                 {
                     DataContext = viewModel.PlaceOrderViewModel
                 };
-                viewModel.PlaceOrderViewModel.LoadAccountDetails(account);
+                await viewModel.PlaceOrderViewModel.LoadAccountDetailsAsync(account);
                 _placeOrderWindow.Owner = this;
                 _placeOrderWindow.ShowDialog();
             };

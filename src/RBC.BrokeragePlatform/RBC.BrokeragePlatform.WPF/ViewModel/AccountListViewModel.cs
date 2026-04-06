@@ -1,9 +1,9 @@
 namespace RBC.BrokeragePlatform.WPF.ViewModel;
 
-using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using RBC.BrokeragePlatform.WPF.Model;
 using RBC.BrokeragePlatform.WPF.Services;
+using System.Collections.ObjectModel;
 
 public partial class AccountListViewModel : ObservableObject
 {
@@ -21,27 +21,38 @@ public partial class AccountListViewModel : ObservableObject
     public AccountListViewModel(BrokerageService brokerageService)
     {
         _brokerageService = brokerageService;
-        LoadAccounts();
+        
     }
 
-    partial void OnSearchTextChanged(string value)
+    public async Task OnSearchTextChangedAsync(string value)
     {
-        FilterAccounts();
+        await FilterAccountsAsync();
     }
 
-    private void LoadAccounts()
+    public async Task LoadAccountsAsync()
     {
-        var allAccounts = _brokerageService.GetAllAccounts();
-        Accounts = new ObservableCollection<Account>(allAccounts);
+        var allAccounts = await _brokerageService.GetAllAccountsAsync();
+        Accounts = new ObservableCollection<Account>([.. allAccounts.Select(a => new Account()
+        {
+            AccountId = a.AccountId,
+            AccountNumber = a.AccountNumber,
+            CashBalance = a.CashBalance,
+            ClientName = a.ClientName
+        })]);
     }
 
-    private void FilterAccounts()
+    private async Task FilterAccountsAsync()
     {
-        var allAccounts = _brokerageService.GetAllAccounts();
+        var allAccounts = await _brokerageService.GetAllAccountsAsync();
         var filtered = allAccounts.Where(a =>
             a.AccountNumber.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
             a.ClientName.Contains(SearchText, StringComparison.OrdinalIgnoreCase)
-        ).ToList();
+        ).Select(a => new Account()
+        {
+            AccountNumber = a.AccountNumber,
+            CashBalance = a.CashBalance,
+            ClientName = a.ClientName
+        }).ToList();
 
         Accounts.Clear();
         foreach (var account in filtered)
