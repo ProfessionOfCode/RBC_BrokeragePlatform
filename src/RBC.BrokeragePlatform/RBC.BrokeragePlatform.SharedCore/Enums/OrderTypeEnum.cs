@@ -1,4 +1,4 @@
-namespace RBC.BrokeragePlatform.WPF.Model;
+namespace RBC.BrokeragePlatform.SharedCore.Enums;
 
 public enum OrderTypeEnum 
 {

@@ -2,6 +2,7 @@ namespace RBC.BrokeragePlatform.WPF.ViewModel;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using RBC.BrokeragePlatform.SharedCore.DTOs;
 using RBC.BrokeragePlatform.WPF.Model;
 using RBC.BrokeragePlatform.WPF.Services;
 using System.Collections.ObjectModel;
@@ -27,17 +28,50 @@ public partial class SelectedAccountViewModel : ObservableObject, IDisposable
         _brokerageService = brokerageService;
     }
 
-    public void LoadAccountDetails(Account? account)
+    public async Task LoadAccountDetailsAsync(Account? account)
     {
         SelectedAccount = account;
         if (account != null)
-            RefreshPositionsInternal();
+          await  RefreshAccountPositionsAsync();
+
+        _brokerageService.PositionUpdatedCallback += async (updatedPositions) =>
+        {
+            UpdatePositionInCollection(updatedPositions);
+        };
+    }
+
+    private void UpdatePositionInCollection(List<PositionDto> updatedPositions)
+    {
+        foreach (var updatedPosition in updatedPositions)
+        {          
+            var positionFound = Positions.FirstOrDefault(p => p.PositionId == updatedPosition.PositionId);
+
+            if (positionFound != null && positionFound is Position positionToUpdate)
+            {
+                positionToUpdate.UpdateFromDto(updatedPosition);
+            }
+            else
+            {
+                Positions.Add(new Position()
+                {
+                    PositionId = updatedPosition.PositionId,
+                    AccountId = updatedPosition.AccountId,
+                    EquityId = updatedPosition.EquityId,
+                    Symbol = updatedPosition.Symbol,
+                    AverageCostPerShare = updatedPosition.AverageCostPerShare,
+                    CurrentPrice = updatedPosition.CurrentPrice,
+                    Quantity = updatedPosition.Quantity,
+                    CurrentValue = updatedPosition.CurrentValue
+
+                });
+            }
+        }                   
     }
 
     [RelayCommand(CanExecute = nameof(CanRefresh))]
-    public void RefreshPositions()
+    public async Task RefreshPositions()
     {
-        RefreshPositionsInternal();
+       await RefreshAccountPositionsAsync();
     }
 
     [RelayCommand(CanExecute = nameof(CanPlaceOrder))]
@@ -47,7 +81,7 @@ public partial class SelectedAccountViewModel : ObservableObject, IDisposable
         ShowPlaceOrderWindowAsDialogCallback?.Invoke(this, SelectedAccount);
     }
 
-    private void RefreshPositionsInternal()
+    private async Task RefreshAccountPositionsAsync()
     {
         if (SelectedAccount == null)
             return;
@@ -55,10 +89,24 @@ public partial class SelectedAccountViewModel : ObservableObject, IDisposable
         IsLoading = true;
         try
         {
-            var positions = _brokerageService.GetPositions(SelectedAccount.AccountNumber);
+            var positionDtos = await _brokerageService.GetPositionsAsync(SelectedAccount.AccountId);
+            var positions =  positionDtos.Select(p => new Position()
+                            {
+                                PositionId = p.PositionId,
+                                AccountId = p.AccountId,
+                                EquityId = p.EquityId,
+                                Symbol = p.Symbol,
+                                AverageCostPerShare = p.AverageCostPerShare,
+                                CurrentPrice = p.CurrentPrice,
+                                Quantity = p.Quantity,
+                                CurrentValue = p.CurrentValue
+                            });
+
             Positions.Clear();
             foreach (var position in positions)
+            {
                 Positions.Add(position);
+            }                
         }
         finally
         {
@@ -66,14 +114,12 @@ public partial class SelectedAccountViewModel : ObservableObject, IDisposable
         }
     }
 
-    internal BrokerageService GetBrokerageService()
-    {
-        return _brokerageService;
-    }
-
     public void Dispose()
     {
         Positions.Clear();
+        _brokerageService.Dispose();
+        GC.SuppressFinalize(this);
+        GC.Collect();
     }
 
     private bool CanRefresh => SelectedAccount != null;

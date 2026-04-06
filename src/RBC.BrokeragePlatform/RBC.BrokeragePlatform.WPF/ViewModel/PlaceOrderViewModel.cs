@@ -2,6 +2,7 @@ namespace RBC.BrokeragePlatform.WPF.ViewModel;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using RBC.BrokeragePlatform.SharedCore.Enums;
 using RBC.BrokeragePlatform.WPF.Model;
 using RBC.BrokeragePlatform.WPF.Services;
 using System.Collections.ObjectModel;
@@ -10,7 +11,7 @@ using System.ComponentModel.DataAnnotations;
 
 public partial class PlaceOrderViewModel : ObservableValidator, IDisposable
 {
-    private BrokerageService _brokerageService = new();
+    private BrokerageService _brokerageService = default!;
 
     public Func<PlaceOrderViewModel, Account?, int>? ShowPlaceOrderConfirmationDialogCallback;
 
@@ -79,7 +80,7 @@ public partial class PlaceOrderViewModel : ObservableValidator, IDisposable
             ValidationErrors.Clear();
             foreach (var error in GetErrors(e.PropertyName).Select(e => e.ErrorMessage).ToList() ?? Enumerable.Empty<string?>())
                 ValidationErrors.Add(error);
-        };
+        };     
     }
     public PlaceOrderViewModel(BrokerageService brokerageService): this()
     {
@@ -93,11 +94,11 @@ public partial class PlaceOrderViewModel : ObservableValidator, IDisposable
         _brokerageService = brokerageService;
     }
 
-    public void LoadAccountDetails(Account? account)
+    public async Task LoadAccountDetailsAsync(Account? account)
     {
         SelectedAccount = account;
         if (account != null)
-            RefreshPlaceOrderInterface();
+           await RefreshPlaceOrderInterfaceAsync();
     }
 
 
@@ -129,7 +130,7 @@ public partial class PlaceOrderViewModel : ObservableValidator, IDisposable
         }   
     }
 
-    private void RefreshPlaceOrderInterface()
+    private async Task RefreshPlaceOrderInterfaceAsync()
     {
         if (SelectedAccount == null)
             return;
@@ -141,12 +142,12 @@ public partial class PlaceOrderViewModel : ObservableValidator, IDisposable
             foreach (var orderType in orderTypes)
                 OrderTypes.Add(orderType);
 
-            var symbols = _brokerageService.GetSymbols(SelectedAccount?.AccountNumber ?? string.Empty);
+            var symbols = _brokerageService.GetSymbols(SelectedAccount.AccountId);
             Symbols.Clear();
             foreach (var symbol in symbols)
                 Symbols.Add(symbol);
 
-            PlaceOrderTitle = $"Place Order for {SelectedAccount?.ClientName} ({SelectedAccount?.AccountNumber})";
+            PlaceOrderTitle = $"Place Order for {SelectedAccount.ClientName} ({SelectedAccount.AccountNumber})";
 
             Quantity = default!;
 

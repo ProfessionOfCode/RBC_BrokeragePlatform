@@ -1,6 +1,8 @@
 namespace RBC.BrokeragePlatform.WPF.ViewModel;
 
 using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using RBC.BrokeragePlatform.WPF.Services;
 
 public partial class MainViewModel : ObservableObject
@@ -13,16 +15,20 @@ public partial class MainViewModel : ObservableObject
 
     public MainViewModel()
     {
-        _brokerageService = new BrokerageService();
+        var apiService = App.Services.GetRequiredService<ApiService>();
+        var signalRService = App.Services.GetRequiredService<SignalRService>();
+        var loggerService = App.Services.GetRequiredService<ILogger<BrokerageService>>();
+
+        _brokerageService = new BrokerageService(apiService, signalRService, loggerService);
         AccountListViewModel = new AccountListViewModel(_brokerageService);
         SelectedAccountViewModel = new SelectedAccountViewModel(_brokerageService);
         PlaceOrderViewModel = new PlaceOrderViewModel(_brokerageService);
 
         // Master-detail binding
-        AccountListViewModel.PropertyChanged += (s, e) =>
+        AccountListViewModel.PropertyChanged += async (s, e) =>
         {
             if (e.PropertyName == nameof(AccountListViewModel.SelectedAccount))
-                SelectedAccountViewModel.LoadAccountDetails(AccountListViewModel.SelectedAccount);
+               await SelectedAccountViewModel.LoadAccountDetailsAsync(AccountListViewModel.SelectedAccount);
         };
     }
 }

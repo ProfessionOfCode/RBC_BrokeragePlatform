@@ -13,7 +13,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\RBC.BrokeragePlatform.Application\RBC.BrokeragePlatform.Application.csproj" />
     <ProjectReference Include="..\RBC.BrokeragePlatform.Persistence\RBC.BrokeragePlatform.Persistence.csproj" />
+    <ProjectReference Include="..\RBC.BrokeragePlatform.SharedCore\RBC.BrokeragePlatform.SharedCore.csproj" />
   </ItemGroup>
 
 </Project>
