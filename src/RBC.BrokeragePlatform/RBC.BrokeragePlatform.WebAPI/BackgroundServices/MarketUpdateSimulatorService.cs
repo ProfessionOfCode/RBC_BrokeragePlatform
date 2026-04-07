@@ -9,7 +9,7 @@ namespace RBC.BrokeragePlatform.WebAPI.BackgroundServices
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<MarketUpdateSimulatorService> _logger;
-        private readonly TimeSpan _updateInterval = TimeSpan.FromSeconds(3);
+        private readonly TimeSpan _updateInterval = TimeSpan.FromSeconds(4);
         private readonly Random _random = new();
 
         public MarketUpdateSimulatorService(IServiceProvider serviceProvider, ILogger<MarketUpdateSimulatorService> logger)
@@ -68,7 +68,7 @@ namespace RBC.BrokeragePlatform.WebAPI.BackgroundServices
                                 account.AccountId, account.ClientName);
 
                             // Simulate market update by randomly adjusting equity prices (this is just a placeholder for actual market logic)
-                            await mediator.Publish(new PositionUpdatedEvent { AccountId = account.AccountId, PriceChange = _random.Next(1, 20) * 10m - 5 }, cancellationToken);
+                            await mediator.Publish(new PositionUpdatedEvent { AccountId = account.AccountId, PriceChange = GetDeltaPriceChangeFromMarket() }, cancellationToken);
                             await Task.Delay(100, cancellationToken); // Simulate processing time
                             await positionPushService.PushAccountPositionsAsync(account.AccountId, cancellationToken);
                         }
@@ -86,6 +86,19 @@ namespace RBC.BrokeragePlatform.WebAPI.BackgroundServices
                     _logger.LogInformation("Error during market update - Exception: {ExceptionMessage}", ex.Message);
                 }
             }
+        }
+
+        private decimal GetDeltaPriceChangeFromMarket()
+        {
+            // Simulate a random price change between -2.5 and +2.5
+            decimal lowerBound = -2.5m;
+            decimal upperBound = 2.5m;
+
+            var isNegative = _random.Next(0, 17) % 3 == 0; // Randomly decide if the price change should be negative
+
+            var priceChange = lowerBound + ((decimal)(_random.NextDouble() / Double.MaxValue) * (upperBound - lowerBound));
+            
+            return isNegative ? -priceChange : priceChange;
         }
     }
 }

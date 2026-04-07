@@ -32,12 +32,14 @@ public partial class SelectedAccountViewModel : ObservableObject, IDisposable
     {
         SelectedAccount = account;
         if (account != null)
-          await  RefreshAccountPositionsAsync();
-
-        _brokerageService.PositionUpdatedCallback += async (updatedPositions) =>
         {
-            UpdatePositionInCollection(updatedPositions);
-        };
+            await RefreshAccountPositionsAsync();
+            await _brokerageService.StartPushNotificationsAsync();
+            // subscribe to position updates for this account
+            await _brokerageService.SubscribeToPositionUpdateGroup(account!.AccountId);
+
+            await _brokerageService.RegisterPositionUpdateCallbackAsync(UpdatePositionInCollection);
+        }        
     }
 
     private void UpdatePositionInCollection(List<PositionDto> updatedPositions)
@@ -120,6 +122,17 @@ public partial class SelectedAccountViewModel : ObservableObject, IDisposable
         _brokerageService.Dispose();
         GC.SuppressFinalize(this);
         GC.Collect();
+    }
+
+    public async Task UnRegisterAccountPositionUpdates()
+    {
+        if (SelectedAccount == null)
+            return;
+
+        // unregister callback to stop receiving position updates for this account
+        await _brokerageService.UnregisterPositionUpdateCallbackAsync();
+        // unsubscribe from position updates for this account
+        await _brokerageService.UnSubscribeToPositionUpdateGroup(SelectedAccount.AccountId);
     }
 
     private bool CanRefresh => SelectedAccount != null;

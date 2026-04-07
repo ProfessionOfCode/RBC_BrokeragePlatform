@@ -28,7 +28,10 @@ public partial class MainViewModel : ObservableObject
         AccountListViewModel.PropertyChanged += async (s, e) =>
         {
             if (e.PropertyName == nameof(AccountListViewModel.SelectedAccount))
-               await SelectedAccountViewModel.LoadAccountDetailsAsync(AccountListViewModel.SelectedAccount);
+            {
+                await SelectedAccountViewModel.UnRegisterAccountPositionUpdates();  // unsubscribe from previous account position updates if any
+                await SelectedAccountViewModel.LoadAccountDetailsAsync(AccountListViewModel.SelectedAccount);
+            }               
         };
     }
 }

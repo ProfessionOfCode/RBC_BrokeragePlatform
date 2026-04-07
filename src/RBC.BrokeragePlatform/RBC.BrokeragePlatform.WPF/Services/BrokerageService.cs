@@ -1,6 +1,5 @@
 namespace RBC.BrokeragePlatform.WPF.Services;
 
-using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using RBC.BrokeragePlatform.SharedCore.DTOs;
@@ -8,13 +7,14 @@ using RBC.BrokeragePlatform.SharedCore.Enums;
 using RBC.BrokeragePlatform.WPF.Model;
 
 public class BrokerageService : IDisposable
-{   
+{
     private readonly List<OrderType> _orderTypes;
     private readonly Dictionary<int, List<PositionDto>> _positions = new Dictionary<int, List<PositionDto>>();
     private readonly ApiService _apiService;
     private readonly SignalRService _signalRService;
     private readonly ILogger<BrokerageService> _logger;
-    public Action<List<PositionDto>>? PositionUpdatedCallback { get; set; }
+    private Action<List<PositionDto>>? PositionUpdatedCallback { get; set; } = default!;
+    private readonly Func<List<PositionDto>, Task>? PositionUpdatedBrokerageServiceCallback = default!;
 
     public BrokerageService(ApiService apiService, SignalRService signalRService, ILogger<BrokerageService> logger)
     {
@@ -22,22 +22,50 @@ public class BrokerageService : IDisposable
         _signalRService = signalRService;
         _logger = logger;
         _orderTypes = InitializeOrderTypes();
-
-        SubscribeToSignalR();
+        PositionUpdatedBrokerageServiceCallback = async (updatedPositions) => await OnPositionUpdatedAsync(updatedPositions);
     }
 
-    private void SubscribeToSignalR()
+    public async Task StartPushNotificationsAsync()
     {
-        var connection = _signalRService.Connection;
-        if (connection != null)
+        if (_signalRService.Connection == null)
         {
-            connection.On<List<PositionDto>>("PositionUpdated", OnPositionUpdated);
-            _logger.LogInformation("Subscribed to PositionUpdated SignalR event.");
+            await _signalRService.StartAsync();
         }
-        else
+    }
+
+    public async Task SubscribeToPositionUpdateGroup(int accountId)
+    {
+        await _signalRService.SubscribreToPositionUpdateGroup(accountId);
+    }
+
+    public async Task UnSubscribeToPositionUpdateGroup(int accountId)
+    {
+        await _signalRService.UnsubscribeFromPositionUpdateGroup(accountId);
+    }
+
+    public async Task RegisterPositionUpdateCallbackAsync(Action<List<PositionDto>> callback)
+    {
+        PositionUpdatedCallback = callback;
+        await _signalRService.RegisterPositionUpdatesHandlerAsync(PositionUpdatedBrokerageServiceCallback!);
+    }
+
+    public async Task UnregisterPositionUpdateCallbackAsync()
+    {
+        PositionUpdatedCallback = null;
+        await _signalRService.UnRegisterPositionUpdatesHandler();
+    }
+
+    private async Task OnPositionUpdatedAsync(List<PositionDto> updatedPositions)
+    {
+        _logger.LogInformation("Received PositionUpdated push for {Symbols}.", string.Join(",", updatedPositions.Select(p => p.Symbol).ToList()));
+
+        if (RegisterPositionUpdateCallbackAsync == null)
         {
-            _logger.LogWarning("SignalR connection is not initialized.");
+            _logger.LogWarning("PositionUpdatedCallback is not set. Cannot process position updates.");
+            return;
         }
+
+        PositionUpdatedCallback?.Invoke(updatedPositions);
     }
 
     public async Task<List<AccountDto>> GetAllAccountsAsync()
@@ -61,8 +89,7 @@ public class BrokerageService : IDisposable
             return new List<AccountDto>();
         }
     }
-   
-    
+
     public async Task<List<PositionDto>> GetPositionsAsync(int accountId)
     {
         try
@@ -90,21 +117,15 @@ public class BrokerageService : IDisposable
         }
     }
 
-    private void OnPositionUpdated(List<PositionDto> updatedPositions)
-    {
-        _logger.LogInformation("Received PositionUpdated push for {Symbols}.", string.Join( ",", updatedPositions.Select(p => p.Symbol).ToList()));
-        PositionUpdatedCallback?.Invoke(updatedPositions);
-    }
-
-
     public List<OrderType> GetOrderTypes() => _orderTypes;
-    public List<string> GetSymbols(int accountId) 
+
+    public List<string> GetSymbols(int accountId)
     {
         _positions.TryGetValue(accountId, out var positions);
 
         return positions?.Select(p => p.Symbol).Distinct().ToList() ?? new List<string>();
     }
-    
+
     private List<OrderType> InitializeOrderTypes()
     {
         return new()
@@ -117,7 +138,7 @@ public class BrokerageService : IDisposable
     public void Dispose()
     {
         _positions.Clear();
-        
+
         _apiService.Dispose();
 
         _signalRService.Dispose();
@@ -126,4 +147,45 @@ public class BrokerageService : IDisposable
         GC.Collect();
 
     }
+
+    public async Task PlaceOrderAsync(int accountId, string selectedSymbol, int orderTypeId, int quantity, decimal limitPrice)
+    {
+        // get equityId based on symbol and accountId
+        var equityId = _positions.TryGetValue(accountId, out var positions)
+            ? positions.FirstOrDefault(p => p.Symbol == selectedSymbol)?.EquityId
+            : 0;
+
+        try
+        {
+            _logger.LogInformation("Placing an order from API.");
+
+            var hasSucceeded = await _apiService.PostAsync("api/orders", new
+            {
+                AccountId = accountId,
+                // add equity id and position id if needed in the future
+                Symbol = selectedSymbol,
+                OrderType = orderTypeId,
+                Quantity = quantity,
+                LimitPrice = limitPrice
+            });
+
+            if (hasSucceeded)
+            {
+                _logger.LogInformation("Order placed successfully for AccountId: {AccountId}", accountId);
+                // optionally, you can trigger a refresh of positions here if you want to immediately reflect the new order in the UI
+                // update the cashbalance and positions immediately after placing the order, or rely on the push notification to update the positions
+            }
+            else
+            {
+                _logger.LogWarning("Order placement failed for AccountId: {AccountId}", accountId);
+            }
+
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to place order.");
+
+        }
+    }
+
 }

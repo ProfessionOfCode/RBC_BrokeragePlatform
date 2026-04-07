@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Polly;
 using Polly.Retry;
+using RBC.BrokeragePlatform.SharedCore.DTOs;
 
 namespace RBC.BrokeragePlatform.WPF.Services
 {
@@ -41,10 +42,73 @@ namespace RBC.BrokeragePlatform.WPF.Services
             _logger.LogInformation("SignalR connected to {HubUrl}", hubUrl);
         }
 
-        public void Dispose()
+        public async Task SubscribreToPositionUpdateGroup(int accountId)
         {
+            _logger.LogInformation("Subscribing to position updates for AccountId: {AccountId}", accountId);
+
+            if (_connection == null)
+            {
+                _logger.LogError("SignalR connection is not established. Cannot subscribe to position updates.");
+                return;
+            }
+
+            await _connection.SendAsync("SubscribeToPositionUpdates", accountId);
+
+            _logger.LogInformation("Subscribed to position updates for AccountId: {AccountId}", accountId);
+        }
+
+        public async Task UnsubscribeFromPositionUpdateGroup(int accountId)
+        {
+            _logger.LogInformation("Unsubscribing from position updates for AccountId: {AccountId}", accountId);
+            if (_connection == null)
+            {
+                _logger.LogError("SignalR connection is not established. Cannot unsubscribe from position updates.");
+                return;
+            }
+            await _connection.SendAsync("UnsubscribeFromPositionUpdates", accountId);
+            _logger.LogInformation("Unsubscribed from position updates for AccountId: {AccountId}", accountId);
+        }
+
+
+        public async Task RegisterPositionUpdatesHandlerAsync(Func<List<PositionDto>, Task> handler)
+        {
+            if (_connection == null)
+            {
+                _logger.LogError("SignalR connection is not established. Cannot register position updates handler.");
+                return;
+            }
+            _connection.On("PositionUpdated", handler);
+            _logger.LogInformation("Registered position updates handler");
+        }
+
+        public async Task UnRegisterPositionUpdatesHandler() 
+        {
+            if (_connection == null)
+            {
+                _logger.LogError("SignalR connection is not established. Cannot register position updates handler.");
+                return;
+            }
+            _connection.Remove("PositionUpdated");
+            _logger.LogInformation("Registered position updates handler");
+        }
+
+
+        public async void Dispose()
+        {
+            // unsubscribe from all events and stop the connection
+            StopConnectionsAsync();
             GC.SuppressFinalize(this);
             GC.Collect();
+        }
+
+        private async void StopConnectionsAsync()
+        {
+            if (_connection != null)
+            {
+                await _connection.StopAsync();
+                await _connection.DisposeAsync();
+                _logger.LogInformation("SignalR connection stopped and disposed");
+            }
         }
 
         public HubConnection? Connection => _connection;

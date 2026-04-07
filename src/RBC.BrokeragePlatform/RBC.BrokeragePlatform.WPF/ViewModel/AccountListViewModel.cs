@@ -20,14 +20,9 @@ public partial class AccountListViewModel : ObservableObject
 
     public AccountListViewModel(BrokerageService brokerageService)
     {
-        _brokerageService = brokerageService;
-        
+        _brokerageService = brokerageService;        
     }
-
-    public async Task OnSearchTextChangedAsync(string value)
-    {
-        await FilterAccountsAsync();
-    }
+ 
 
     public async Task LoadAccountsAsync()
     {

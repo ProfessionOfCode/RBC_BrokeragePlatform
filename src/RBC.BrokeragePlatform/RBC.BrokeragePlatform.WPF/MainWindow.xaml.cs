@@ -14,10 +14,7 @@ namespace RBC.BrokeragePlatform.WPF
         public MainWindow()
         {
             InitializeComponent();
-            var viewModel = new MainViewModel();
-            //RegisterCallbackToShowPlaceOrderDialogWindow(viewModel);
-            //RegisterPlaceOrderConfirmationMessage(viewModel);
-            
+
             DataContextChanged += async (s, e) =>
             {
                 if (e.NewValue is MainViewModel newViewModel)
@@ -27,8 +24,8 @@ namespace RBC.BrokeragePlatform.WPF
                     await newViewModel.AccountListViewModel.LoadAccountsAsync();
                 }
             };
-
-            DataContext = viewModel;
+                        
+            DataContext = new MainViewModel();
         }
 
         private void RegisterPlaceOrderConfirmationMessage(MainViewModel viewModel)

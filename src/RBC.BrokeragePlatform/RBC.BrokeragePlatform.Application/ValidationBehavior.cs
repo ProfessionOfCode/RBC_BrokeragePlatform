@@ -20,16 +20,18 @@ namespace RBC.BrokeragePlatform.Application
 
             var context = new ValidationContext<TRequest>(request);
 
-            var errorsDictionary = _validators
-                .Select(x => x.Validate(context))
-                .SelectMany(x => x.Errors)
-                .Where(x => x != null)
-                .ToList();
-
-            if (errorsDictionary.Any())
+            foreach (var validator in _validators)
             {
-                throw new ValidationException("Something went wrong:", errorsDictionary);
-            }
+                var validationResult = await validator.ValidateAsync(context, cancellationToken);
+                if (!validationResult.IsValid)
+                {
+                    var errors = validationResult.Errors.Where(e => e != null).ToList();
+                    if (errors.Any())
+                    {
+                        throw new ValidationException("Validation failed:", errors);
+                    }
+                }
+            }   
 
             return await next();
         }

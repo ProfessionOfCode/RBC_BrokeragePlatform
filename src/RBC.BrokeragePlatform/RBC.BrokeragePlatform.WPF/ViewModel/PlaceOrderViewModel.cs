@@ -87,18 +87,13 @@ public partial class PlaceOrderViewModel : ObservableValidator, IDisposable
         _brokerageService = brokerageService;
     }
 
-
-
-    public void SetBrokerageService(BrokerageService brokerageService)
-    {
-        _brokerageService = brokerageService;
-    }
-
     public async Task LoadAccountDetailsAsync(Account? account)
     {
         SelectedAccount = account;
         if (account != null)
-           await RefreshPlaceOrderInterfaceAsync();
+        {
+            await RefreshPlaceOrderInterfaceAsync();
+        }
     }
 
 
@@ -115,7 +110,7 @@ public partial class PlaceOrderViewModel : ObservableValidator, IDisposable
             if (confirmationResult != 1)
                 return;    
             
-            await Task.Delay(1000); // simulate network delay
+            await _brokerageService.PlaceOrderAsync(SelectedAccount!.AccountId, SelectedSymbol, SelectedOrderType.OrderTypeId, Quantity, LimitPrice);
 
         }
         catch (Exception)
