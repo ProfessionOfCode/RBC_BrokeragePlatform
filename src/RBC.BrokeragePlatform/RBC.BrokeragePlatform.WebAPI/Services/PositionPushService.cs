@@ -125,5 +125,7 @@ namespace RBC.BrokeragePlatform.WebAPI.Services
                    pos1.Quantity == pos2.Quantity &&
                    pos1.AverageCostPerShare == pos2.AverageCostPerShare;
         }
+        
+
     }
 }

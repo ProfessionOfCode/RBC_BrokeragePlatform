@@ -1,7 +1,7 @@
-using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Moq;
 using RBC.BrokeragePlatform.Application.Features.GetAllAccounts;
+using RBC.BrokeragePlatform.Application.Interfaces.Mapping;
 using RBC.BrokeragePlatform.Application.Interfaces.Repositories;
 using RBC.BrokeragePlatform.Domain.Entities;
 using RBC.BrokeragePlatform.SharedCore.DTOs;
@@ -24,7 +24,7 @@ namespace RBC.BrokeragePlatform.Application.Tests.Features.GetAllAccounts
                 CashBalance = 150000m 
             } };
             mockRepo.Setup(r => r.GetAllAccountsAsync(It.IsAny<CancellationToken>())).ReturnsAsync(accounts);
-            mockMapper.Setup(m => m.Map<IEnumerable<AccountDto>>(accounts)).Returns(dtos);
+            mockMapper.Setup(m => m.MapCollection<Account, AccountDto>(accounts)).Returns(dtos);
             var handler = new GetAllAccountsQueryHandler(mockRepo.Object, mockMapper.Object, mockLogger.Object);
             var result = await handler.Handle(new GetAllAccountsQuery(), CancellationToken.None);
             Assert.Single(result);

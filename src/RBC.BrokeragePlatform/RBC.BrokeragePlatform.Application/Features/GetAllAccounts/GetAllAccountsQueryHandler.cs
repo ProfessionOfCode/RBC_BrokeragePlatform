@@ -1,6 +1,6 @@
-﻿using AutoMapper;
-using MediatR;
+﻿using MediatR;
 using Microsoft.Extensions.Logging;
+using RBC.BrokeragePlatform.Application.Interfaces.Mapping;
 using RBC.BrokeragePlatform.Application.Interfaces.Repositories;
 using RBC.BrokeragePlatform.SharedCore.DTOs;
 
@@ -29,7 +29,7 @@ namespace RBC.BrokeragePlatform.Application.Features.GetAllAccounts
             {
                 var accounts = await _repository.GetAllAccountsAsync(cancellationToken);
 
-                accountDtos = _mapper.Map<IEnumerable<AccountDto>>(accounts);
+                accountDtos = _mapper.MapCollection<Domain.Entities.Account, AccountDto>(accounts);
 
                 _logger.LogInformation("Handling GetAllAccountsQuery completed successfully.");                
             }

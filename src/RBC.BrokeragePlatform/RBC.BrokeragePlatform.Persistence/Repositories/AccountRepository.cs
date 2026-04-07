@@ -24,7 +24,7 @@ namespace RBC.BrokeragePlatform.Persistence.Repositories
             return [.. context.Accounts];
         }
         
-        public async Task<IEnumerable<Account?>> GetAllAccountsAsync(CancellationToken cancellationToken)
+        public async Task<IEnumerable<Account>> GetAllAccountsAsync(CancellationToken cancellationToken)
         {
             return await context.Accounts.ToListAsync(cancellationToken);
         }

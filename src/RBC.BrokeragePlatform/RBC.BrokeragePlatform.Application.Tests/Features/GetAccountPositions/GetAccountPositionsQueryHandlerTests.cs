@@ -1,7 +1,7 @@
-using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Moq;
 using RBC.BrokeragePlatform.Application.Features.GetAccountPositions;
+using RBC.BrokeragePlatform.Application.Interfaces.Mapping;
 using RBC.BrokeragePlatform.Application.Interfaces.Repositories;
 using RBC.BrokeragePlatform.Domain.Entities;
 using RBC.BrokeragePlatform.SharedCore.DTOs;
@@ -32,7 +32,7 @@ namespace RBC.BrokeragePlatform.Application.Tests.Features.GetAccountPositions
             } };
             mockPositionRepo.Setup(r => r.GetPositionsByAccountIdAsync(It.IsAny<int>(), It.IsAny<CancellationToken>())).ReturnsAsync(positions);
             mockEquityRepo.Setup(r => r.GetEquitiesByIdsAsync(It.IsAny<IEnumerable<int>>(), It.IsAny<CancellationToken>())).ReturnsAsync(equities);
-            mockMapper.Setup(m => m.Map<IEnumerable<PositionDto>>(positions)).Returns(dtos);
+            mockMapper.Setup(m => m.MapCollection<Position, PositionDto>(positions)).Returns(dtos);
             var handler = new GetAccountPositionsQueryHandler(mockPositionRepo.Object, mockEquityRepo.Object, mockMapper.Object, mockLogger.Object);
             var result = await handler.Handle(new GetAccountPositionsQuery(1), CancellationToken.None);
             Assert.Single(result);

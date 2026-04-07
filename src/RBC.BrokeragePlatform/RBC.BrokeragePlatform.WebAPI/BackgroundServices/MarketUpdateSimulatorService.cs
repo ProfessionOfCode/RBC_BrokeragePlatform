@@ -89,12 +89,11 @@ namespace RBC.BrokeragePlatform.WebAPI.BackgroundServices
         }
 
         private decimal GetDeltaPriceChangeFromMarket()
-        {
-            // Simulate a random price change between -2.5 and +2.5
-            decimal lowerBound = -2.5m;
-            decimal upperBound = 2.5m;
+        {            
+            decimal lowerBound = -1.5m;
+            decimal upperBound = 1.5m;
 
-            var isNegative = _random.Next(0, 17) % 3 == 0; // Randomly decide if the price change should be negative
+            var isNegative = _random.Next(0, 13) % 3 == 0;
 
             var priceChange = lowerBound + ((decimal)(_random.NextDouble() / Double.MaxValue) * (upperBound - lowerBound));
             

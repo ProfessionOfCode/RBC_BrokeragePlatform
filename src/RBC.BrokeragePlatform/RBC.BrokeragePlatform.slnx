@@ -1,17 +1,11 @@
 <Solution>
   <Folder Name="/Core/">
-    <Project Path="RBC.BrokeragePlatform.Application/RBC.BrokeragePlatform.Application.csproj">
-      <Build Solution="Release|*" Project="false" />
-    </Project>
-    <Project Path="RBC.BrokeragePlatform.Domain/RBC.BrokeragePlatform.Domain.csproj">
-      <Build Solution="Release|*" Project="false" />
-    </Project>
+    <Project Path="RBC.BrokeragePlatform.Application/RBC.BrokeragePlatform.Application.csproj" />
+    <Project Path="RBC.BrokeragePlatform.Domain/RBC.BrokeragePlatform.Domain.csproj" />
     <Project Path="RBC.BrokeragePlatform.SharedCore/RBC.BrokeragePlatform.SharedCore.csproj" Id="eb540924-1ead-4647-9674-fd560b024994" />
   </Folder>
   <Folder Name="/Infrastructure/">
-    <Project Path="RBC.BrokeragePlatform.Persistence/RBC.BrokeragePlatform.Persistence.csproj">
-      <Build Solution="Release|*" Project="false" />
-    </Project>
+    <Project Path="RBC.BrokeragePlatform.Persistence/RBC.BrokeragePlatform.Persistence.csproj" />
     <Project Path="RBC.BrokeragePlatform.WebAPI/RBC.BrokeragePlatform.WebAPI.csproj" />
   </Folder>
   <Folder Name="/Presentation/">

@@ -15,6 +15,8 @@ namespace RBC.BrokeragePlatform.Application.Features.PlaceOrder
             // TODO: Implement the logic to place an order based on the request parameters (Symbol, OrderType, Quantity, LimitPrice).
             // update the account balance and holdings accordingly.
 
+            await Task.Delay(2500); // Simulate some asynchronous work, such as calling an external API or database.
+
             return await Task.FromResult(Unit.Value);
         }
     }

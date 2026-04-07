@@ -1,4 +1,5 @@
-﻿using RBC.BrokeragePlatform.WPF.Model;
+﻿using Microsoft.Extensions.DependencyInjection;
+using RBC.BrokeragePlatform.WPF.Model;
 using RBC.BrokeragePlatform.WPF.ViewModel;
 using System.Windows;
 
@@ -24,12 +25,12 @@ namespace RBC.BrokeragePlatform.WPF
                     await newViewModel.AccountListViewModel.LoadAccountsAsync();
                 }
             };
-                        
-            DataContext = new MainViewModel();
+
+            DataContext = App.Services.GetRequiredService<MainViewModel>();
         }
 
         private void RegisterPlaceOrderConfirmationMessage(MainViewModel viewModel)
-        {            
+        {
             viewModel.PlaceOrderViewModel.ShowPlaceOrderConfirmationDialogCallback += ShowConfirmationDialog;
         }
 
