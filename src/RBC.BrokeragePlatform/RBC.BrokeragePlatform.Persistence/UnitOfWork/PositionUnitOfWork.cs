@@ -1,5 +1,6 @@
 ﻿using RBC.BrokeragePlatform.Application.Interfaces.Repositories;
 using RBC.BrokeragePlatform.Application.Interfaces.UnitOfWorks;
+using RBC.BrokeragePlatform.Domain.Entities;
 using RBC.BrokeragePlatform.Persistence.Data;
 
 namespace RBC.BrokeragePlatform.Persistence.UnitOfWork
@@ -35,15 +36,34 @@ namespace RBC.BrokeragePlatform.Persistence.UnitOfWork
         {
             var positions = await _positionRepository.GetPositionsByAccountIdAsync(accountId, cancellationToken);
 
-            // update the positions based on the price change
-            foreach (var position in positions.Reverse().Take(positions.Count()/3))
-            {
-                position.AverageCostPerShare += priceChange; // Example of updating the price
-            }
+            var maxAverageCostPerShare = positions.Max(p => p.AverageCostPerShare);
+            
+            RecursivePriceChangeUpdate(positions, priceChange);
 
             _positionRepository.UpdatePositions(positions);
             
             return positions.Count();
+        }
+
+        private void RecursivePriceChangeUpdate(IEnumerable<Position> positions, decimal priceChange)
+        {
+            if(!positions.Any())
+            {
+                return;
+            }
+
+            if(positions.Count() == 1)
+            {
+                var position = positions.First();
+                position.AverageCostPerShare += priceChange;
+                return;
+            }
+
+            var separatorIndex = positions.Count() / 2;
+
+            RecursivePriceChangeUpdate(positions.Take(separatorIndex), priceChange);
+            RecursivePriceChangeUpdate(positions.Skip(separatorIndex + 1), priceChange);
+
         }
     }
 }

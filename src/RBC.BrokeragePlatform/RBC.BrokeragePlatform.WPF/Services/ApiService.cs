@@ -41,5 +41,16 @@ namespace RBC.BrokeragePlatform.WPF.Services
             _logger.LogInformation("GET {Endpoint} succeeded", endpoint);
             return content;
         }      
+        
+        public async Task<bool> PostAsync(string endpoint, object payload)
+        {
+            var client = _httpClientFactory.CreateClient(nameof(ApiService));
+            var context = new Context { ["endpoint"] = endpoint };
+            var response = await _retryPolicy.ExecuteAsync((ctx) => 
+            client.PostAsync(endpoint, new StringContent(System.Text.Json.JsonSerializer.Serialize(payload), 
+                    System.Text.Encoding.UTF8, "application/json")), context);            
+            _logger.LogInformation("GET {Endpoint} succeeded", endpoint);
+            return response.IsSuccessStatusCode;
+        }      
     }
 }

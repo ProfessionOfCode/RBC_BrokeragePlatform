@@ -19,7 +19,7 @@ namespace RBC.BrokeragePlatform.Persistence.Repositories
             return await _context.Equities.ToListAsync(cancellationToken);
         }
 
-        public Equity GetEquityById(int equityId)
+        public Equity? GetEquityById(int equityId)
         {
             return _context.Equities.FirstOrDefault(e => e.EquityId == equityId);
         }

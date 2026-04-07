@@ -6,17 +6,17 @@
     <Project Path="RBC.BrokeragePlatform.Domain/RBC.BrokeragePlatform.Domain.csproj">
       <Build Solution="Release|*" Project="false" />
     </Project>
+    <Project Path="RBC.BrokeragePlatform.SharedCore/RBC.BrokeragePlatform.SharedCore.csproj" Id="eb540924-1ead-4647-9674-fd560b024994" />
   </Folder>
   <Folder Name="/Infrastructure/">
     <Project Path="RBC.BrokeragePlatform.Persistence/RBC.BrokeragePlatform.Persistence.csproj">
       <Build Solution="Release|*" Project="false" />
     </Project>
-    <Project Path="RBC.BrokeragePlatform.SharedCore/RBC.BrokeragePlatform.SharedCore.csproj" Id="eb540924-1ead-4647-9674-fd560b024994" />
     <Project Path="RBC.BrokeragePlatform.WebAPI/RBC.BrokeragePlatform.WebAPI.csproj" />
   </Folder>
   <Folder Name="/Presentation/">
-    <Project Path="RBC.BrokeragePlatform.WPF/RBC.BrokeragePlatform.WPF.csproj" />
     <Project Path="RBC.BrokeragePlatform.Launcher/RBC.BrokeragePlatform.Launcher.csproj" Id="8aaa55d8-2d50-4eb2-9697-c5f310fa6aa7" />
+    <Project Path="RBC.BrokeragePlatform.WPF/RBC.BrokeragePlatform.WPF.csproj" />
   </Folder>
   <Folder Name="/Tests/">
     <Project Path="RBC.BrokeragePlatform.Application.Tests/RBC.BrokeragePlatform.Application.Tests.csproj">

@@ -29,7 +29,7 @@ namespace RBC.BrokeragePlatform.WebAPI
             builder.Services.AddScoped<IPositionPushService, PositionPushService>();
 
             // Add hosted background service
-            builder.Services.AddHostedService<MarketUpdateSimulatorService>();
+            builder.Services.AddHostedService<MarketUpdateSimulatorService>();      // Ideally, this would be replaced with a real market data feed in production and started when a client connection is made
 
             // Add CORS for SignalR
             builder.Services.AddCors(options =>

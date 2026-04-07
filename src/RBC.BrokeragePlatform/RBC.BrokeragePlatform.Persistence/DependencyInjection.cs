@@ -48,7 +48,7 @@ namespace RBC.BrokeragePlatform.Persistence
                 ClientName = $"Client {i}",
                 AccountNumber = $"ACC{1000+i}",
                 CashBalance = 10000 + i * 1000
-            }).ToList();
+            }).Distinct().ToList();
 
             // make sure to check if data already exists to avoid duplicate seeding
             foreach (var account in accounts)
@@ -65,20 +65,23 @@ namespace RBC.BrokeragePlatform.Persistence
                 EquityId = i,
                 Symbol = stockSymbols[i],
                 CurrentPrice = 50 + i * 12
-            }).ToList();
-
+            }).Distinct().ToList();            
             
+
             foreach (var equity in equities)
             {
-                if (!context.Set<Equity>().Any(a => a.EquityId == equity.EquityId))
+                if (!context.Set<Equity>().Any(a => a.EquityId == equity.EquityId)
+                    && !context.Set<Equity>().Any(a => a.Symbol.ToLower() == equity.Symbol.ToLower()))
                 {
                     context.Set<Equity>().Add(equity);
                     seedingCount++;
-                }
+                }                
             }
+     
+
 
             var rnd = new Random();
-            var positions = Enumerable.Range(1, 20).Select(i =>
+            var positions = Enumerable.Range(10, 35).Select(i =>
             {
                 var account = accounts[rnd.Next(accounts.Count)];
                 var equity = equities[rnd.Next(equities.Count)];
@@ -88,14 +91,16 @@ namespace RBC.BrokeragePlatform.Persistence
                     AccountId = account.AccountId,
                     EquityId = equity.EquityId,
                     Symbol = equity.Symbol,
-                    Quantity = rnd.Next(1, 100),
+                    Quantity = rnd.Next(5, 100),
                     AverageCostPerShare = equity.CurrentPrice - rnd.Next(1, 10)
                 };
             }).ToList();
-            
+
             foreach (var position in positions)
             {
-                if (!context.Set<Position>().Any(a => a.PositionId == position.PositionId))
+                if (!context.Set<Position>().Any(a => a.PositionId == position.PositionId)
+                    && !context.Set<Position>().Any(p => p.AccountId == position.AccountId && p.EquityId == position.EquityId)
+                    )
                 {
                     context.Set<Position>().Add(position);
                     seedingCount++;

@@ -59,7 +59,7 @@ namespace RBC.BrokeragePlatform.WebAPI.Services
                     _logger.LogInformation("Position changes detected - AccountId: {AccountId}, PositionCount: {PositionCount}", 
                         accountId, currentPositionsList.Count);
 
-                    await _hubContext.Clients.All                       
+                    await _hubContext.Clients.Group($"account_positions_{accountId}")
                         .SendAsync("PositionUpdated", currentPositionsList, cancellationToken);
 
                     _logger.LogInformation("Position update pushed to clients - AccountId: {AccountId}", accountId);
