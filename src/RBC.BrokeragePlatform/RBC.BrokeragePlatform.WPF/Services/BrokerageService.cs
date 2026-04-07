@@ -4,19 +4,20 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using RBC.BrokeragePlatform.SharedCore.DTOs;
 using RBC.BrokeragePlatform.SharedCore.Enums;
+using RBC.BrokeragePlatform.WPF.Interfaces.Services;
 using RBC.BrokeragePlatform.WPF.Model;
 
-public class BrokerageService : IDisposable
+public class BrokerageService : IBrokerageService
 {
     private readonly List<OrderType> _orderTypes;
     private readonly Dictionary<int, List<PositionDto>> _positions = new Dictionary<int, List<PositionDto>>();
-    private readonly ApiService _apiService;
-    private readonly SignalRService _signalRService;
+    private readonly IApiService _apiService;
+    private readonly ISignalRService _signalRService;
     private readonly ILogger<BrokerageService> _logger;
     private Action<List<PositionDto>>? PositionUpdatedCallback { get; set; } = default!;
     private readonly Func<List<PositionDto>, Task>? PositionUpdatedBrokerageServiceCallback = default!;
 
-    public BrokerageService(ApiService apiService, SignalRService signalRService, ILogger<BrokerageService> logger)
+    public BrokerageService(IApiService apiService, ISignalRService signalRService, ILogger<BrokerageService> logger)
     {
         _apiService = apiService;
         _signalRService = signalRService;
@@ -25,34 +26,39 @@ public class BrokerageService : IDisposable
         PositionUpdatedBrokerageServiceCallback = async (updatedPositions) => await OnPositionUpdatedAsync(updatedPositions);
     }
 
+    /// <inheritdoc/>
     public async Task StartPushNotificationsAsync()
     {
-        if (_signalRService.Connection == null)
+        if (!_signalRService.IsConnected)
         {
             await _signalRService.StartAsync();
         }
     }
 
+    /// <inheritdoc/>
     public async Task SubscribeToPositionUpdateGroup(int accountId)
     {
-        await _signalRService.SubscribreToPositionUpdateGroup(accountId);
+        await _signalRService.SubscribeToPositionUpdateGroup(accountId);
     }
 
-    public async Task UnSubscribeToPositionUpdateGroup(int accountId)
+    /// <inheritdoc/>
+    public async Task UnsubscribeToPositionUpdateGroup(int accountId)
     {
         await _signalRService.UnsubscribeFromPositionUpdateGroup(accountId);
     }
 
+    /// <inheritdoc/>
     public async Task RegisterPositionUpdateCallbackAsync(Action<List<PositionDto>> callback)
     {
         PositionUpdatedCallback = callback;
         await _signalRService.RegisterPositionUpdatesHandlerAsync(PositionUpdatedBrokerageServiceCallback!);
     }
 
+    /// <inheritdoc/>
     public async Task UnregisterPositionUpdateCallbackAsync()
     {
         PositionUpdatedCallback = null;
-        await _signalRService.UnRegisterPositionUpdatesHandler();
+        await _signalRService.UnregisterPositionUpdatesHandlerAsync();
     }
 
     private async Task OnPositionUpdatedAsync(List<PositionDto> updatedPositions)
@@ -68,6 +74,7 @@ public class BrokerageService : IDisposable
         PositionUpdatedCallback?.Invoke(updatedPositions);
     }
 
+    /// <inheritdoc/>
     public async Task<List<AccountDto>> GetAllAccountsAsync()
     {
         try
@@ -76,7 +83,6 @@ public class BrokerageService : IDisposable
 
             var result = await _apiService.GetAsync("api/accounts");
 
-            // transform result to List<Account> if necessary, here we assume it's already in the correct format
             var accounts = JsonConvert.DeserializeObject<List<AccountDto>>(result);
 
             _logger.LogInformation("Received {Count} accounts.", accounts?.Count ?? 0);
@@ -90,6 +96,7 @@ public class BrokerageService : IDisposable
         }
     }
 
+    /// <inheritdoc/>
     public async Task<List<PositionDto>> GetPositionsAsync(int accountId)
     {
         try
@@ -98,7 +105,6 @@ public class BrokerageService : IDisposable
 
             var result = await _apiService.GetAsync($"api/positions/{accountId}");
 
-            // transform result to List<Account> if necessary, here we assume it's already in the correct format
             var positionDtos = JsonConvert.DeserializeObject<List<PositionDto>>(result);
 
             _logger.LogInformation("Received {Count} accounts.", positionDtos?.Count ?? 0);
@@ -117,8 +123,10 @@ public class BrokerageService : IDisposable
         }
     }
 
+    /// <inheritdoc/>
     public List<OrderType> GetOrderTypes() => _orderTypes;
 
+    /// <inheritdoc/>
     public List<string> GetSymbols(int accountId)
     {
         _positions.TryGetValue(accountId, out var positions);
@@ -148,9 +156,9 @@ public class BrokerageService : IDisposable
 
     }
 
+    /// <inheritdoc/>
     public async Task PlaceOrderAsync(int accountId, string selectedSymbol, int orderTypeId, int quantity, decimal limitPrice)
     {
-        // get equityId based on symbol and accountId
         var equityId = _positions.TryGetValue(accountId, out var positions)
             ? positions.FirstOrDefault(p => p.Symbol == selectedSymbol)?.EquityId
             : 0;
@@ -162,7 +170,6 @@ public class BrokerageService : IDisposable
             var hasSucceeded = await _apiService.PostAsync("api/orders", new
             {
                 AccountId = accountId,
-                // add equity id and position id if needed in the future
                 Symbol = selectedSymbol,
                 OrderType = orderTypeId,
                 Quantity = quantity,
@@ -172,8 +179,6 @@ public class BrokerageService : IDisposable
             if (hasSucceeded)
             {
                 _logger.LogInformation("Order placed successfully for AccountId: {AccountId}", accountId);
-                // optionally, you can trigger a refresh of positions here if you want to immediately reflect the new order in the UI
-                // update the cashbalance and positions immediately after placing the order, or rely on the push notification to update the positions
             }
             else
             {

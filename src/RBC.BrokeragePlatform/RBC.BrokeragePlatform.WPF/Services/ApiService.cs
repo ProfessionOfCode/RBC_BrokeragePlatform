@@ -1,11 +1,12 @@
 using Microsoft.Extensions.Logging;
 using Polly;
 using Polly.Retry;
+using RBC.BrokeragePlatform.WPF.Interfaces.Services;
 using System.Net.Http;
 
 namespace RBC.BrokeragePlatform.WPF.Services
 {
-    public class ApiService : IDisposable
+    public class ApiService : IApiService
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILogger<ApiService> _logger;
@@ -31,26 +32,28 @@ namespace RBC.BrokeragePlatform.WPF.Services
             GC.Collect();
         }
 
+        /// <inheritdoc/>
         public async Task<string> GetAsync(string endpoint)
         {
-            var client = _httpClientFactory.CreateClient(nameof(ApiService));
+            var client = _httpClientFactory.CreateClient(nameof(IApiService));
             var context = new Context { ["endpoint"] = endpoint };
             var response = await _retryPolicy.ExecuteAsync((ctx) => client.GetAsync(endpoint), context);
             response.EnsureSuccessStatusCode();
             var content = await response.Content.ReadAsStringAsync();
             _logger.LogInformation("GET {Endpoint} succeeded", endpoint);
             return content;
-        }      
-        
+        }
+
+        /// <inheritdoc/>
         public async Task<bool> PostAsync(string endpoint, object payload)
         {
-            var client = _httpClientFactory.CreateClient(nameof(ApiService));
+            var client = _httpClientFactory.CreateClient(nameof(IApiService));
             var context = new Context { ["endpoint"] = endpoint };
-            var response = await _retryPolicy.ExecuteAsync((ctx) => 
-            client.PostAsync(endpoint, new StringContent(System.Text.Json.JsonSerializer.Serialize(payload), 
-                    System.Text.Encoding.UTF8, "application/json")), context);            
+            var response = await _retryPolicy.ExecuteAsync((ctx) =>
+            client.PostAsync(endpoint, new StringContent(System.Text.Json.JsonSerializer.Serialize(payload),
+                    System.Text.Encoding.UTF8, "application/json")), context);
             _logger.LogInformation("GET {Endpoint} succeeded", endpoint);
             return response.IsSuccessStatusCode;
-        }      
+        }
     }
 }

@@ -2,14 +2,15 @@ namespace RBC.BrokeragePlatform.WPF.ViewModel;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.DependencyInjection;
 using RBC.BrokeragePlatform.SharedCore.DTOs;
+using RBC.BrokeragePlatform.WPF.Interfaces.Services;
 using RBC.BrokeragePlatform.WPF.Model;
-using RBC.BrokeragePlatform.WPF.Services;
 using System.Collections.ObjectModel;
 
 public partial class SelectedAccountViewModel : ObservableObject, IDisposable
 {
-    private readonly BrokerageService _brokerageService;
+    private readonly IBrokerageService _brokerageService;
 
     public Action<SelectedAccountViewModel, Account?>? ShowPlaceOrderWindowAsDialogCallback;
 
@@ -23,7 +24,12 @@ public partial class SelectedAccountViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     private bool isLoading;
 
-    public SelectedAccountViewModel(BrokerageService brokerageService)
+    public SelectedAccountViewModel(): this(App.Services.GetRequiredService<IBrokerageService>())
+    {
+        
+    }
+
+    public SelectedAccountViewModel(IBrokerageService brokerageService)
     {
         _brokerageService = brokerageService;
     }
@@ -35,17 +41,16 @@ public partial class SelectedAccountViewModel : ObservableObject, IDisposable
         {
             await RefreshAccountPositionsAsync();
             await _brokerageService.StartPushNotificationsAsync();
-            // subscribe to position updates for this account
             await _brokerageService.SubscribeToPositionUpdateGroup(account!.AccountId);
 
             await _brokerageService.RegisterPositionUpdateCallbackAsync(UpdatePositionInCollection);
-        }        
+        }
     }
 
     private void UpdatePositionInCollection(List<PositionDto> updatedPositions)
     {
         foreach (var updatedPosition in updatedPositions)
-        {          
+        {
             var positionFound = Positions.FirstOrDefault(p => p.PositionId == updatedPosition.PositionId);
 
             if (positionFound != null && positionFound is Position positionToUpdate)
@@ -67,7 +72,7 @@ public partial class SelectedAccountViewModel : ObservableObject, IDisposable
 
                 });
             }
-        }                   
+        }
     }
 
     [RelayCommand(CanExecute = nameof(CanRefresh))]
@@ -79,7 +84,6 @@ public partial class SelectedAccountViewModel : ObservableObject, IDisposable
     [RelayCommand(CanExecute = nameof(CanPlaceOrder))]
     public void PlaceOrder()
     {
-        // callback to main view code behind to open place order interface
         ShowPlaceOrderWindowAsDialogCallback?.Invoke(this, SelectedAccount);
     }
 
@@ -108,7 +112,7 @@ public partial class SelectedAccountViewModel : ObservableObject, IDisposable
             foreach (var position in positions)
             {
                 Positions.Add(position);
-            }                
+            }
         }
         finally
         {
@@ -129,10 +133,8 @@ public partial class SelectedAccountViewModel : ObservableObject, IDisposable
         if (SelectedAccount == null)
             return;
 
-        // unregister callback to stop receiving position updates for this account
         await _brokerageService.UnregisterPositionUpdateCallbackAsync();
-        // unsubscribe from position updates for this account
-        await _brokerageService.UnSubscribeToPositionUpdateGroup(SelectedAccount.AccountId);
+        await _brokerageService.UnsubscribeToPositionUpdateGroup(SelectedAccount.AccountId);
     }
 
     private bool CanRefresh => SelectedAccount != null;

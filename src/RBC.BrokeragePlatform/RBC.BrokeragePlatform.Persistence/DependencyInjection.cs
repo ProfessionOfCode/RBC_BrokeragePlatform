@@ -19,10 +19,6 @@ namespace RBC.BrokeragePlatform.Persistence
                     {
                         SeedBrokerageData(context);
                     });
-                //.UseAsyncSeeding(async (context, _, cancellationToken) => 
-                //    { 
-                //        await SeedBrokerageDataAsync(context);
-                //    });       Is seeded when EnsureCreatedAsync is called on the in-memory database.
             });
 
             services.AddScoped<IBrokeragePlatformDbContext>(provider => provider.GetRequiredService<BrokeragePlatformDbContext>());
@@ -40,17 +36,18 @@ namespace RBC.BrokeragePlatform.Persistence
         private static void SeedBrokerageData(DbContext context)
         {
             int seedingCount = 0;
-            var stockSymbols = new List<string> { "AAPL", "MSFT", "GOOGL", "AMZN", "FB", "TSLA", "NVDA", "JPM", "V", "DIS", "TSM", "META", "XOM", "ORCL", "MA" };
+            var stockSymbols = new List<string> { "AAPL", "MSFT", "GOOGL", "AMZN", "FB", "TSLA", "NVDA", "JPM", "V", "DIS", "TSM", "META", "XOM", "ORCL", "MA", "WMT", "NFLX" };
 
-            var accounts = Enumerable.Range(1, 5).Select(i => new Account
+            var random = new Random();
+
+            var accounts = Enumerable.Range(10000, 5).Select(i => new Account
             {
                 AccountId = i,
                 ClientName = $"Client {i}",
-                AccountNumber = $"ACC{1000+i}",
-                CashBalance = 10000 + i * 1000
+                AccountNumber = $"ACC{10000+i}",
+                CashBalance = 500 + i * random.Next(15, 25) * 100
             }).Distinct().ToList();
 
-            // make sure to check if data already exists to avoid duplicate seeding
             foreach (var account in accounts)
             {
                 if (!context.Set<Account>().Any(a => a.AccountId == account.AccountId))
@@ -60,7 +57,7 @@ namespace RBC.BrokeragePlatform.Persistence
                 }
             }            
 
-            var equities = Enumerable.Range(1, 12).Select(i => new Equity
+            var equities = Enumerable.Range(1, 15).Select(i => new Equity
             {
                 EquityId = i,
                 Symbol = stockSymbols[i],
@@ -81,20 +78,7 @@ namespace RBC.BrokeragePlatform.Persistence
 
 
             var rnd = new Random();
-            var positions = Enumerable.Range(10, 35).Select(i =>
-            {
-                var account = accounts[rnd.Next(accounts.Count)];
-                var equity = equities[rnd.Next(equities.Count)];
-                return new Position
-                {
-                    PositionId = i,
-                    AccountId = account.AccountId,
-                    EquityId = equity.EquityId,
-                    Symbol = equity.Symbol,
-                    Quantity = rnd.Next(5, 100),
-                    AverageCostPerShare = equity.CurrentPrice - rnd.Next(1, 10)
-                };
-            }).ToList();
+            var positions = GenerateUniquePositionsPerAccountEquities(accounts, equities, 20, rnd);
 
             foreach (var position in positions)
             {
@@ -113,73 +97,32 @@ namespace RBC.BrokeragePlatform.Persistence
             }
         }
 
-        // The async version of seeding is provided to demonstrate how you can seed data asynchronously if needed.
-        //private async static Task SeedBrokerageDataAsync(DbContext context)
-        //{
-        //    int seedingCount = 0;
-        //    var accounts = Enumerable.Range(1, 5).Select(i => new Account
-        //    {
-        //        AccountId = i,
-        //        ClientName = $"Client {i}",
-        //        AccountNumber = 1000 + i,
-        //        CashBalance = 10000 + i * 1000
-        //    }).ToList();
+        private static IEnumerable<Position> GenerateUniquePositionsPerAccountEquities(List<Account> accounts, List<Equity> equities, int maximumNumberOfPositionsPerAccount, Random rnd)
+        {
+            if(accounts == null || equities == null || accounts.Count == 0 || equities.Count == 0)
+            {
+                yield break;
+            }            
 
-        //    foreach (var account in accounts)
-        //    {
-        //        if (!context.Set<Account>().Any(a => a.AccountId == account.AccountId))
-        //        {
-        //            await context.Set<Account>().AddAsync(account);
-        //            seedingCount++;
-        //        }
-        //    }
+            foreach (var account in accounts) 
+            {
+                var numberOfPositionsForAccount = rnd.Next(1, Math.Min(maximumNumberOfPositionsPerAccount, equities.Count) + 1);
+                for (int i = 0; i < numberOfPositionsForAccount; i++)
+                {
+                    var equity = equities[i];
+                    yield return new Position
+                    {
+                        PositionId = account.AccountId * 100 + equity.EquityId,
+                        AccountId = account.AccountId,
+                        EquityId = equity.EquityId,
+                        Symbol = equity.Symbol,
+                        Quantity = rnd.Next(1, 100),
+                        AverageCostPerShare = equity.CurrentPrice - rnd.Next(1, 10)
+                    };
 
-        //    var equities = Enumerable.Range(1, 10).Select(i => new Equity
-        //    {
-        //        EquityId = i,
-        //        Symbol = $"EQ{i:000}",
-        //        CurrentPrice = 50 + i * 10
-        //    }).ToList();
-
-        //    foreach (var equity in equities)
-        //    {
-        //        if (!context.Set<Equity>().Any(a => a.EquityId == equity.EquityId))
-        //        {
-        //            await context.Set<Equity>().AddAsync(equity);
-        //            seedingCount++;
-        //        }
-        //    }
-
-        //    var rnd = new Random();
-        //    var positions = Enumerable.Range(1, 20).Select(i =>
-        //    {
-        //        var account = accounts[rnd.Next(accounts.Count)];
-        //        var equity = equities[rnd.Next(equities.Count)];
-        //        return new Position
-        //        {
-        //            PositionId = i,
-        //            AccountId = account.AccountId,
-        //            EquityId = equity.EquityId,
-        //            Symbol = equity.Symbol,
-        //            Quantity = rnd.Next(1, 100),
-        //            AverageCostPerShare = equity.CurrentPrice - rnd.Next(1, 10)
-        //        };
-        //    }).ToList();
-
-        //    foreach (var position in positions)
-        //    {
-        //        if (!context.Set<Position>().Any(a => a.PositionId == position.PositionId))
-        //        {
-        //            await context.Set<Position>().AddAsync(position);
-        //            seedingCount++;
-        //        }
-        //    }
-
-        //    if(seedingCount > 0)
-        //    {
-        //        await context.SaveChangesAsync();
-        //    }                
-        //}
+                }
+            }
+        }
 
     }
 }

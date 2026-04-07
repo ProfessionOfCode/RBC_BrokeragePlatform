@@ -2,36 +2,38 @@ namespace RBC.BrokeragePlatform.WPF.ViewModel;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using RBC.BrokeragePlatform.WPF.Services;
 
 public partial class MainViewModel : ObservableObject
 {
-    private readonly BrokerageService _brokerageService;
-    
     public AccountListViewModel AccountListViewModel { get; }
     public SelectedAccountViewModel SelectedAccountViewModel { get; }
     public PlaceOrderViewModel PlaceOrderViewModel { get; }
 
-    public MainViewModel()
+    public MainViewModel(): this(
+        App.Services.GetRequiredService<AccountListViewModel>(),
+        App.Services.GetRequiredService<SelectedAccountViewModel>(),
+        App.Services.GetRequiredService<PlaceOrderViewModel>()
+        )
     {
-        var apiService = App.Services.GetRequiredService<ApiService>();
-        var signalRService = App.Services.GetRequiredService<SignalRService>();
-        var loggerService = App.Services.GetRequiredService<ILogger<BrokerageService>>();
+        
+    }
 
-        _brokerageService = new BrokerageService(apiService, signalRService, loggerService);
-        AccountListViewModel = new AccountListViewModel(_brokerageService);
-        SelectedAccountViewModel = new SelectedAccountViewModel(_brokerageService);
-        PlaceOrderViewModel = new PlaceOrderViewModel(_brokerageService);
+    public MainViewModel(
+        AccountListViewModel accountListViewModel,
+        SelectedAccountViewModel selectedAccountViewModel,
+        PlaceOrderViewModel placeOrderViewModel)
+    {
+        AccountListViewModel = accountListViewModel;
+        SelectedAccountViewModel = selectedAccountViewModel;
+        PlaceOrderViewModel = placeOrderViewModel;
 
-        // Master-detail binding
         AccountListViewModel.PropertyChanged += async (s, e) =>
         {
             if (e.PropertyName == nameof(AccountListViewModel.SelectedAccount))
             {
-                await SelectedAccountViewModel.UnRegisterAccountPositionUpdates();  // unsubscribe from previous account position updates if any
+                await SelectedAccountViewModel.UnRegisterAccountPositionUpdates();
                 await SelectedAccountViewModel.LoadAccountDetailsAsync(AccountListViewModel.SelectedAccount);
-            }               
+            }
         };
     }
 }

@@ -1,6 +1,6 @@
-using AutoMapper;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using RBC.BrokeragePlatform.Application.Interfaces.Mapping;
 using RBC.BrokeragePlatform.Application.Interfaces.Repositories;
 using RBC.BrokeragePlatform.SharedCore.DTOs;
 
@@ -37,7 +37,7 @@ namespace RBC.BrokeragePlatform.Application.Features.GetAccountPositions
                     return positionDtos;
                 }
 
-                positionDtos = _mapper.Map<IEnumerable<PositionDto>>(positions);
+                positionDtos = _mapper.MapCollection<Domain.Entities.Position, PositionDto>(positions);
 
                 // get current price for each position and update the DTOs
                 var equityIds = positions.Select(p => p.EquityId).Distinct().ToList();
