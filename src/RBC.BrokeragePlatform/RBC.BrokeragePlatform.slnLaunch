@@ -1,0 +1,15 @@
+[
+  {
+    "Name": "RBC_BrokeragePlatform",
+    "Projects": [
+      {
+        "Path": "RBC.BrokeragePlatform.WebAPI\\RBC.BrokeragePlatform.WebAPI.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "RBC.BrokeragePlatform.WPF\\RBC.BrokeragePlatform.WPF.csproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]
