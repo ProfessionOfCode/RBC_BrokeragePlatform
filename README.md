@@ -3,15 +3,11 @@ Brokerage platform that traders need to view client accounts, see equity positio
 
 ## Setup
 - Install .NET 10.0 SDK from https://dotnet.microsoft.com/en-us/download/dotnet/10.0
-- Clone the repository and navigate to the project directory.
-- Open the solution in your preferred IDE (Visual Studio preferably).
-- Run the application using the IDE's run/debug feature.
-- Or publish the application and run the executable,
-  publish with the command 
-  <br /> 
-  `dotnet publish -p:PublishProfile=FolderProfile`
-  <br /> 
-  then run the launcher executable `RBC.BrokeragePlatform.Launcher.exe` from the `RBC_BrokeragePlatform\releases` folder.
+- Navigate to the project directory.
+- Open the solution in Visual Studio.
+- Set startup projects by selecting Multiple startup projects from the Configure Startup Projects configuration.
+- Build the solution and run the application using the IDE's start without debug/start,
+- or run the launcher app from a published release.
 
 ## How to run
 
@@ -24,16 +20,20 @@ Brokerage platform that traders need to view client accounts, see equity positio
 
 **Steps**
 1. Open `src/RBC.BrokeragePlatform/RBC.BrokeragePlatform.slnx` in Visual Studio.
-2. Set startup projects so both apps can run:
+2. Set startup projects by selecting multiple projects startup in the Configure Startup Projects so both apps can run:
    - `RBC.BrokeragePlatform.WebAPI`
    - `RBC.BrokeragePlatform.WPF`
 3. Start debugging (`F5`) or run without debugging (`Ctrl+F5`).
-4. Confirm the API starts (default profile uses `http://localhost:5016`).
+4. Confirm the API starts.
 5. Confirm the WPF client can load accounts/positions.
 
 ### Option 2 - Run the published release (recommended)
 Because of local machine security policies (see Smart Application Control note below), the most stable approach is to run the published binaries.
-
+Execute in the Developer PowerShell the command
+<br /> 
+  `dotnet publish -p:PublishProfile=FolderProfile`
+<br />
+  
 1. Go to the release directory at the same level as `README.md`:
    - `./releases` (or your local `release` folder naming if customized)
 2. Run:
