@@ -41,11 +41,11 @@
                             Margin="10"
                             Padding="5"
                             HorizontalAlignment="Stretch"
-                            Background="Black"
+                            Background="WhiteSmoke"
                             FontFamily="./fonts/#Roboto Light"
                             FontSize="18"
                             FontWeight="Bold"
-                            Foreground="Yellow"
+                            Foreground="#9A6700"
                             Text="The references in this demo application are for illustrative purposes and are not representative of a moral person."
                             TextAlignment="Justify"
                             TextWrapping="Wrap" />
