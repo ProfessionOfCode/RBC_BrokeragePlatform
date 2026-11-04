@@ -18,21 +18,17 @@ public partial class PlaceOrderViewModel : ObservableValidator, IDisposable
     [NotifyCanExecuteChangedFor(nameof(PlaceOrderCommand))]
     private Account? selectedAccount;
 
-    [ObservableProperty]
-    private ObservableCollection<OrderType> orderTypes = new();
+    [ObservableProperty]private ObservableCollection<OrderType> orderTypes = new();
 
-    [ObservableProperty]
-    private ObservableCollection<string> symbols = new();
+    [ObservableProperty]private ObservableCollection<string> symbols = new();
 
-    [ObservableProperty]
-    private ObservableCollection<string?> validationErrors = new();
+    [ObservableProperty]private ObservableCollection<string?> validationErrors = new();
 
     [NotifyCanExecuteChangedFor(nameof(PlaceOrderCommand))]
     [ObservableProperty]
     private string selectedSymbol = string.Empty;
 
-    [ObservableProperty]
-    private string placeOrderTitle = string.Empty;
+    [ObservableProperty]private string placeOrderTitle = string.Empty;
 
     [NotifyCanExecuteChangedFor(nameof(PlaceOrderCommand))]
     [ObservableProperty]
@@ -50,8 +46,7 @@ public partial class PlaceOrderViewModel : ObservableValidator, IDisposable
     [ObservableProperty]
     private decimal limitPrice;
 
-    [ObservableProperty]
-    private bool isPlacingOrder;
+    [ObservableProperty]private bool isPlacingOrder;
 
     public static ValidationResult ValidateLimitPrice(decimal limitPrice, ValidationContext context)
     {

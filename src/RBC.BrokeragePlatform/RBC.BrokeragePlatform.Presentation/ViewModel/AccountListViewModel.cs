@@ -9,14 +9,11 @@ public partial class AccountListViewModel : ObservableObject
 {
     private readonly IBrokerageService _brokerageService;
 
-    [ObservableProperty]
-    private ObservableCollection<Account> accounts = new();
+    [ObservableProperty]private ObservableCollection<Account> accounts = new();
 
-    [ObservableProperty]
-    private Account? selectedAccount;
+    [ObservableProperty]private Account? selectedAccount;
 
-    [ObservableProperty]
-    private string searchText = string.Empty;
+    [ObservableProperty]private string searchText = string.Empty;
 
     public AccountListViewModel(IBrokerageService brokerageService)
     {

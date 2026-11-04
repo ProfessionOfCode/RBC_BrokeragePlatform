@@ -17,11 +17,9 @@ public partial class SelectedAccountViewModel : ObservableObject, IDisposable
     [NotifyCanExecuteChangedFor(nameof(PlaceOrderCommand), nameof(RefreshPositionsCommand))]
     private Account? selectedAccount;
 
-    [ObservableProperty]
-    private ObservableCollection<Position> positions = new();
+    [ObservableProperty]private ObservableCollection<Position> positions = new();
 
-    [ObservableProperty]
-    private bool isLoading;
+    [ObservableProperty]private bool isLoading;
 
     public SelectedAccountViewModel(IBrokerageService brokerageService)
     {
