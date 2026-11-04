@@ -1,7 +1,6 @@
 namespace RBC.BrokeragePlatform.WPF.ViewModel;
 
 using CommunityToolkit.Mvvm.ComponentModel;
-using Microsoft.Extensions.DependencyInjection;
 using RBC.BrokeragePlatform.WPF.Interfaces.Services;
 using RBC.BrokeragePlatform.WPF.Model;
 using System.Collections.ObjectModel;
@@ -18,11 +17,6 @@ public partial class AccountListViewModel : ObservableObject
 
     [ObservableProperty]
     private string searchText = string.Empty;
-
-    public AccountListViewModel(): this(App.Services.GetRequiredService<IBrokerageService>())
-    {
-        
-    }
 
     public AccountListViewModel(IBrokerageService brokerageService)
     {

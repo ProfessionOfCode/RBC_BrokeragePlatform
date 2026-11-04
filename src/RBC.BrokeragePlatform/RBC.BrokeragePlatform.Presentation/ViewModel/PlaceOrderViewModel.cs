@@ -2,7 +2,6 @@ namespace RBC.BrokeragePlatform.WPF.ViewModel;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Microsoft.Extensions.DependencyInjection;
 using RBC.BrokeragePlatform.SharedCore.Enums;
 using RBC.BrokeragePlatform.WPF.Interfaces.Services;
 using RBC.BrokeragePlatform.WPF.Model;
@@ -70,11 +69,6 @@ public partial class PlaceOrderViewModel : ObservableValidator, IDisposable
             return new ValidationResult("Quantity must be greater than zero.");
 
         return ValidationResult.Success!;
-    }
-
-    public PlaceOrderViewModel(): this(App.Services.GetRequiredService<IBrokerageService>())
-    {
-        
     }
 
     public PlaceOrderViewModel(IBrokerageService brokerageService)

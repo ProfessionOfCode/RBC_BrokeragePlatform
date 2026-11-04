@@ -9,6 +9,7 @@
     <Project Path="RBC.BrokeragePlatform.WebAPI/RBC.BrokeragePlatform.WebAPI.csproj" />
   </Folder>
   <Folder Name="/Presentation/">
+    <Project Path="RBC.BrokeragePlatform.Presentation/RBC.BrokeragePlatform.Presentation.csproj" />
     <Project Path="RBC.BrokeragePlatform.Launcher/RBC.BrokeragePlatform.Launcher.csproj" Id="8aaa55d8-2d50-4eb2-9697-c5f310fa6aa7" />
     <Project Path="RBC.BrokeragePlatform.WPF/RBC.BrokeragePlatform.WPF.csproj" />
   </Folder>
@@ -19,7 +20,7 @@
     <Project Path="RBC.BrokeragePlatform.WebAPI.Tests/RBC.BrokeragePlatform.WebAPI.Tests.csproj">
       <Build Solution="Release|*" Project="false" />
     </Project>
-    <Project Path="RBC.BrokeragePlatform.WPF.Tests/RBC.BrokeragePlatform.WPF.Tests.csproj">
+    <Project Path="RBC.BrokeragePlatform.Presentation.Tests/RBC.BrokeragePlatform.Presentation.Tests.csproj">
       <Build Solution="Release|*" Project="false" />
     </Project>
   </Folder>

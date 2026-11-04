@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using RBC.BrokeragePlatform.WPF.Services;
 
-namespace RBC.BrokeragePlatform.WPF.Tests.Services;
+namespace RBC.BrokeragePlatform.Presentation.Tests.Services;
 
 public class SignalRServiceTests
 {

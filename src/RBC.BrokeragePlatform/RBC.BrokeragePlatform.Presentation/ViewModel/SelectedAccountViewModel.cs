@@ -2,7 +2,6 @@ namespace RBC.BrokeragePlatform.WPF.ViewModel;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Microsoft.Extensions.DependencyInjection;
 using RBC.BrokeragePlatform.SharedCore.DTOs;
 using RBC.BrokeragePlatform.WPF.Interfaces.Services;
 using RBC.BrokeragePlatform.WPF.Model;
@@ -23,11 +22,6 @@ public partial class SelectedAccountViewModel : ObservableObject, IDisposable
 
     [ObservableProperty]
     private bool isLoading;
-
-    public SelectedAccountViewModel(): this(App.Services.GetRequiredService<IBrokerageService>())
-    {
-        
-    }
 
     public SelectedAccountViewModel(IBrokerageService brokerageService)
     {

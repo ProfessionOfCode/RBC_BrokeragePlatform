@@ -5,7 +5,7 @@ using RBC.BrokeragePlatform.SharedCore.DTOs;
 using RBC.BrokeragePlatform.WPF.Interfaces.Services;
 using RBC.BrokeragePlatform.WPF.Services;
 
-namespace RBC.BrokeragePlatform.WPF.Tests.Services;
+namespace RBC.BrokeragePlatform.Presentation.Tests.Services;
 
 public class BrokerageServiceTests
 {

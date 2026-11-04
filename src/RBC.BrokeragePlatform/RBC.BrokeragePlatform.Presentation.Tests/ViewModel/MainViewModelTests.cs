@@ -4,7 +4,7 @@ using RBC.BrokeragePlatform.WPF.Interfaces.Services;
 using RBC.BrokeragePlatform.WPF.Model;
 using RBC.BrokeragePlatform.WPF.ViewModel;
 
-namespace RBC.BrokeragePlatform.WPF.Tests.ViewModel;
+namespace RBC.BrokeragePlatform.Presentation.Tests.ViewModel;
 
 public class MainViewModelTests
 {
