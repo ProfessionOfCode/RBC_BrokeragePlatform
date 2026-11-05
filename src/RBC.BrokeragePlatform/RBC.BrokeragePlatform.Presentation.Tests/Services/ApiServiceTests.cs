@@ -5,7 +5,7 @@ using RBC.BrokeragePlatform.WPF.Interfaces.Services;
 using RBC.BrokeragePlatform.WPF.Services;
 using System.Net;
 
-namespace RBC.BrokeragePlatform.WPF.Tests.Services;
+namespace RBC.BrokeragePlatform.Presentation.Tests.Services;
 
 public class ApiServiceTests
 {

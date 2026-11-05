@@ -5,7 +5,6 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:RBC.BrokeragePlatform.WPF"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:viewModel="clr-namespace:RBC.BrokeragePlatform.WPF.ViewModel"
     Title="{Binding PlaceOrderTitle}"
     Width="720"
     Height="640"
@@ -13,10 +12,6 @@
     ResizeMode="NoResize"
     WindowStartupLocation="CenterOwner"
     mc:Ignorable="d">
-    <Window.DataContext>
-        <viewModel:PlaceOrderViewModel />
-    </Window.DataContext>
-
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />

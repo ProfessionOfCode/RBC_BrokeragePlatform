@@ -5,17 +5,12 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:RBC.BrokeragePlatform.WPF"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:viewmodel="clr-namespace:RBC.BrokeragePlatform.WPF.ViewModel"
     Title="RBC Brokerage Platform"
     Width="1200"
     Height="700"
     Background="#F5F5F5"
     FontFamily="./fonts/#Roboto Regular"
     mc:Ignorable="d">
-    <Window.DataContext>
-        <viewmodel:MainViewModel />
-    </Window.DataContext>
-
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" MinWidth="300" />
