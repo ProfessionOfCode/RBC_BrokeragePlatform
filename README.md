@@ -93,6 +93,13 @@ The solution follows a layered structure consistent with Clean Architecture boun
 - **Retry pattern** in client networking via `Polly`.
 - **MVVM** in WPF using `CommunityToolkit.Mvvm`.
 
+### Tests
+The solution includes separate test projects for the Application, Web API, and presentation layers. Presentation view models and client services are tested in the platform-neutral `RBC.BrokeragePlatform.Presentation.Tests` project targeting `net10.0`; run it with:
+
+```sh
+dotnet test src/RBC.BrokeragePlatform/RBC.BrokeragePlatform.Presentation.Tests/RBC.BrokeragePlatform.Presentation.Tests.csproj
+```
+
 ### Technical details (C4-style container view)
 ```mermaid
 flowchart LR

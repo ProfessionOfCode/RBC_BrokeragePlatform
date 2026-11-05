@@ -2,7 +2,6 @@ namespace RBC.BrokeragePlatform.WPF.ViewModel;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Microsoft.Extensions.DependencyInjection;
 using RBC.BrokeragePlatform.SharedCore.Enums;
 using RBC.BrokeragePlatform.WPF.Interfaces.Services;
 using RBC.BrokeragePlatform.WPF.Model;
@@ -19,21 +18,17 @@ public partial class PlaceOrderViewModel : ObservableValidator, IDisposable
     [NotifyCanExecuteChangedFor(nameof(PlaceOrderCommand))]
     private Account? selectedAccount;
 
-    [ObservableProperty]
-    private ObservableCollection<OrderType> orderTypes = new();
+    [ObservableProperty]private ObservableCollection<OrderType> orderTypes = new();
 
-    [ObservableProperty]
-    private ObservableCollection<string> symbols = new();
+    [ObservableProperty]private ObservableCollection<string> symbols = new();
 
-    [ObservableProperty]
-    private ObservableCollection<string?> validationErrors = new();
+    [ObservableProperty]private ObservableCollection<string?> validationErrors = new();
 
     [NotifyCanExecuteChangedFor(nameof(PlaceOrderCommand))]
     [ObservableProperty]
     private string selectedSymbol = string.Empty;
 
-    [ObservableProperty]
-    private string placeOrderTitle = string.Empty;
+    [ObservableProperty]private string placeOrderTitle = string.Empty;
 
     [NotifyCanExecuteChangedFor(nameof(PlaceOrderCommand))]
     [ObservableProperty]
@@ -51,8 +46,7 @@ public partial class PlaceOrderViewModel : ObservableValidator, IDisposable
     [ObservableProperty]
     private decimal limitPrice;
 
-    [ObservableProperty]
-    private bool isPlacingOrder;
+    [ObservableProperty]private bool isPlacingOrder;
 
     public static ValidationResult ValidateLimitPrice(decimal limitPrice, ValidationContext context)
     {
@@ -70,11 +64,6 @@ public partial class PlaceOrderViewModel : ObservableValidator, IDisposable
             return new ValidationResult("Quantity must be greater than zero.");
 
         return ValidationResult.Success!;
-    }
-
-    public PlaceOrderViewModel(): this(App.Services.GetRequiredService<IBrokerageService>())
-    {
-        
     }
 
     public PlaceOrderViewModel(IBrokerageService brokerageService)
